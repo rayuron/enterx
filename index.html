@@ -18,6 +18,7 @@
                 <li><a href="#about">About</a></li>
                 <li><a href="#services">Services</a></li>
                 <li><a href="#technology">Technology</a></li>
+                <li><a href="#game">Game</a></li>
                 <li><a href="#contact">Contact</a></li>
             </ul>
         </nav>
@@ -129,7 +130,94 @@
             </div>
         </section>
 
-        <section id="contact" class="section section-alt">
+        <section id="game" class="section section-alt">
+            <div class="container">
+                <h2>🎮 Code Defender</h2>
+                <p class="lead">Defend your codebase from bugs and security vulnerabilities in this tower defense game!</p>
+                
+                <div class="game-container">
+                    <div class="game-info">
+                        <div class="game-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Health:</span>
+                                <span id="health">100</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Money:</span>
+                                <span id="money">150</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Wave:</span>
+                                <span id="wave">1</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Score:</span>
+                                <span id="score">0</span>
+                            </div>
+                        </div>
+                        
+                        <div class="tower-shop">
+                            <h3>🛠️ Defensive Tools</h3>
+                            <div class="tower-buttons">
+                                <button id="antivirus-btn" class="tower-btn" data-cost="50">
+                                    🛡️ Antivirus<br><small>$50</small>
+                                </button>
+                                <button id="firewall-btn" class="tower-btn" data-cost="75">
+                                    🔥 Firewall<br><small>$75</small>
+                                </button>
+                                <button id="unittest-btn" class="tower-btn" data-cost="100">
+                                    🧪 Unit Test<br><small>$100</small>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="game-controls">
+                            <button id="start-btn" class="btn btn-primary">Start Wave</button>
+                            <button id="reset-btn" class="btn btn-secondary">Reset Game</button>
+                        </div>
+                        
+                        <div class="high-score">
+                            <h3>🏆 High Score</h3>
+                            <span id="high-score">0</span>
+                        </div>
+                    </div>
+                    
+                    <canvas id="gameCanvas" width="600" height="400"></canvas>
+                </div>
+                
+                <div class="game-legend">
+                    <h3>📖 Game Guide</h3>
+                    <div class="legend-grid">
+                        <div class="legend-item">
+                            <span class="legend-icon">🐛</span>
+                            <span>Bug - Slow but persistent</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-icon">🦠</span>
+                            <span>Virus - Fast and dangerous</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-icon">💀</span>
+                            <span>Malware - Tanky boss enemy</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-icon">🛡️</span>
+                            <span>Antivirus - Balanced defense</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-icon">🔥</span>
+                            <span>Firewall - High damage</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-icon">🧪</span>
+                            <span>Unit Test - Slow but powerful</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact" class="section">
             <div class="container">
                 <h2>Get In Touch</h2>
                 <p class="lead">Ready to start your next project? Let's discuss how EnterX can help bring your ideas to life.</p>

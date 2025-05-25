@@ -84,444 +84,368 @@ document.addEventListener('DOMContentLoaded', function() {
         observer.observe(el);
     });
     
-    // Initialize the game if canvas exists
-    if (document.getElementById('gameCanvas')) {
-        initGame();
+    // Initialize the Minecraft game if canvas exists
+    if (document.getElementById('minecraftCanvas')) {
+        initMinecraft();
     }
 });
 
-// Code Defender Tower Defense Game
-function initGame() {
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
+// Minecraft Game Implementation
+function initMinecraft() {
+    // Three.js scene setup
+    const canvas = document.getElementById('minecraftCanvas');
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+    
+    renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+    renderer.setClearColor(0x87ceeb); // Sky blue
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    
+    // Lighting
+    const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+    scene.add(ambientLight);
+    
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    directionalLight.position.set(50, 50, 50);
+    directionalLight.castShadow = true;
+    directionalLight.shadow.mapSize.width = 2048;
+    directionalLight.shadow.mapSize.height = 2048;
+    directionalLight.shadow.camera.near = 0.5;
+    directionalLight.shadow.camera.far = 500;
+    directionalLight.shadow.camera.left = -100;
+    directionalLight.shadow.camera.right = 100;
+    directionalLight.shadow.camera.top = 100;
+    directionalLight.shadow.camera.bottom = -100;
+    scene.add(directionalLight);
     
     // Game state
     let gameState = {
-        health: 100,
-        money: 150,
-        wave: 1,
-        score: 0,
-        isRunning: false,
-        selectedTower: null,
-        enemies: [],
-        towers: [],
-        projectiles: [],
-        path: [
-            {x: 0, y: 200},
-            {x: 150, y: 200},
-            {x: 150, y: 100},
-            {x: 300, y: 100},
-            {x: 300, y: 300},
-            {x: 450, y: 300},
-            {x: 450, y: 150},
-            {x: 600, y: 150}
-        ]
+        selectedBlock: 'grass',
+        world: new Map(),
+        playerPosition: { x: 0, y: 10, z: 0 },
+        keys: {},
+        mouseX: 0,
+        mouseY: 0,
+        isPointerLocked: false
     };
     
-    // Tower types
-    const towerTypes = {
-        antivirus: { damage: 25, range: 80, speed: 60, cost: 50, color: '#3b82f6' },
-        firewall: { damage: 40, range: 60, speed: 40, cost: 75, color: '#ef4444' },
-        unittest: { damage: 60, range: 100, speed: 90, cost: 100, color: '#10b981' }
+    // Block types and materials
+    const blockMaterials = {
+        grass: new THREE.MeshLambertMaterial({ color: 0x7cfc00 }),
+        dirt: new THREE.MeshLambertMaterial({ color: 0x8b4513 }),
+        stone: new THREE.MeshLambertMaterial({ color: 0x696969 }),
+        wood: new THREE.MeshLambertMaterial({ color: 0xdaa520 }),
+        water: new THREE.MeshLambertMaterial({ color: 0x0077be, transparent: true, opacity: 0.7 })
     };
     
-    // Enemy types
-    const enemyTypes = {
-        bug: { health: 50, speed: 1, reward: 15, color: '#fbbf24', emoji: '🐛' },
-        virus: { health: 30, speed: 2, reward: 20, color: '#f87171', emoji: '🦠' },
-        malware: { health: 120, speed: 0.8, reward: 50, color: '#6b7280', emoji: '💀' }
+    // Block geometry (reused for all blocks)
+    const blockGeometry = new THREE.BoxGeometry(1, 1, 1);
+    
+    // Camera controls
+    const controls = {
+        moveForward: false,
+        moveBackward: false,
+        moveLeft: false,
+        moveRight: false,
+        canJump: false,
+        velocity: new THREE.Vector3(),
+        direction: new THREE.Vector3()
     };
     
-    // Game classes
-    class Enemy {
-        constructor(type, pathIndex = 0) {
-            this.type = type;
-            this.health = enemyTypes[type].health;
-            this.maxHealth = this.health;
-            this.speed = enemyTypes[type].speed;
-            this.reward = enemyTypes[type].reward;
-            this.pathIndex = pathIndex;
-            this.x = gameState.path[0].x;
-            this.y = gameState.path[0].y;
-            this.progress = 0;
-        }
+    // Set initial camera position
+    camera.position.set(0, 10, 5);
+    
+    // World generation
+    function generateTerrain() {
+        const size = 32;
+        const halfSize = size / 2;
         
-        update() {
-            if (this.pathIndex < gameState.path.length - 1) {
-                const current = gameState.path[this.pathIndex];
-                const next = gameState.path[this.pathIndex + 1];
+        for (let x = -halfSize; x < halfSize; x++) {
+            for (let z = -halfSize; z < halfSize; z++) {
+                // Simple height map using sine waves for terrain
+                const height = Math.floor(3 * Math.sin(x * 0.1) * Math.cos(z * 0.1)) + 5;
                 
-                const dx = next.x - current.x;
-                const dy = next.y - current.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                
-                this.progress += this.speed / distance;
-                
-                if (this.progress >= 1) {
-                    this.pathIndex++;
-                    this.progress = 0;
-                }
-                
-                if (this.pathIndex < gameState.path.length - 1) {
-                    const currentPoint = gameState.path[this.pathIndex];
-                    const nextPoint = gameState.path[this.pathIndex + 1];
+                // Generate layers
+                for (let y = 0; y <= height; y++) {
+                    let blockType;
+                    if (y === height && y > 3) {
+                        blockType = 'grass';
+                    } else if (y >= height - 2 && y > 2) {
+                        blockType = 'dirt';
+                    } else {
+                        blockType = 'stone';
+                    }
                     
-                    this.x = currentPoint.x + (nextPoint.x - currentPoint.x) * this.progress;
-                    this.y = currentPoint.y + (nextPoint.y - currentPoint.y) * this.progress;
+                    addBlock(x, y, z, blockType);
+                }
+                
+                // Add some water at sea level
+                if (height <= 3) {
+                    for (let y = height + 1; y <= 3; y++) {
+                        addBlock(x, y, z, 'water');
+                    }
                 }
             }
         }
         
-        draw() {
-            // Draw enemy body
-            ctx.fillStyle = enemyTypes[this.type].color;
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, 15, 0, Math.PI * 2);
-            ctx.fill();
+        // Add some trees
+        for (let i = 0; i < 20; i++) {
+            const x = Math.floor(Math.random() * size) - halfSize;
+            const z = Math.floor(Math.random() * size) - halfSize;
+            const groundHeight = getGroundHeight(x, z);
             
-            // Draw emoji
-            ctx.font = '20px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText(enemyTypes[this.type].emoji, this.x, this.y + 7);
-            
-            // Draw health bar
-            const barWidth = 30;
-            const barHeight = 4;
-            const healthPercent = this.health / this.maxHealth;
-            
-            ctx.fillStyle = '#ef4444';
-            ctx.fillRect(this.x - barWidth/2, this.y - 25, barWidth, barHeight);
-            
-            ctx.fillStyle = '#10b981';
-            ctx.fillRect(this.x - barWidth/2, this.y - 25, barWidth * healthPercent, barHeight);
-        }
-        
-        takeDamage(damage) {
-            this.health -= damage;
-            return this.health <= 0;
-        }
-        
-        reachedEnd() {
-            return this.pathIndex >= gameState.path.length - 1;
-        }
-    }
-    
-    class Tower {
-        constructor(x, y, type) {
-            this.x = x;
-            this.y = y;
-            this.type = type;
-            this.damage = towerTypes[type].damage;
-            this.range = towerTypes[type].range;
-            this.speed = towerTypes[type].speed;
-            this.lastShot = 0;
-            this.target = null;
-        }
-        
-        update() {
-            const now = Date.now();
-            if (now - this.lastShot < this.speed * 16) return;
-            
-            // Find target
-            this.target = null;
-            let closestDistance = this.range;
-            
-            gameState.enemies.forEach(enemy => {
-                const distance = Math.sqrt(
-                    Math.pow(enemy.x - this.x, 2) + Math.pow(enemy.y - this.y, 2)
-                );
-                if (distance < closestDistance) {
-                    this.target = enemy;
-                    closestDistance = distance;
+            if (groundHeight > 3) {
+                // Tree trunk
+                for (let y = groundHeight + 1; y <= groundHeight + 4; y++) {
+                    addBlock(x, y, z, 'wood');
                 }
-            });
-            
-            // Shoot at target
-            if (this.target) {
-                gameState.projectiles.push(new Projectile(this.x, this.y, this.target, this.damage));
-                this.lastShot = now;
-            }
-        }
-        
-        draw() {
-            // Draw tower base
-            ctx.fillStyle = towerTypes[this.type].color;
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, 20, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Draw tower emoji
-            ctx.font = '24px Arial';
-            ctx.textAlign = 'center';
-            let emoji = this.type === 'antivirus' ? '🛡️' : 
-                       this.type === 'firewall' ? '🔥' : '🧪';
-            ctx.fillText(emoji, this.x, this.y + 8);
-            
-            // Draw range when selected
-            if (gameState.selectedTower === this.type) {
-                ctx.strokeStyle = 'rgba(59, 130, 246, 0.3)';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.range, 0, Math.PI * 2);
-                ctx.stroke();
-            }
-        }
-    }
-    
-    class Projectile {
-        constructor(x, y, target, damage) {
-            this.x = x;
-            this.y = y;
-            this.target = target;
-            this.damage = damage;
-            this.speed = 5;
-        }
-        
-        update() {
-            if (!this.target || this.target.health <= 0) return false;
-            
-            const dx = this.target.x - this.x;
-            const dy = this.target.y - this.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            if (distance < 10) {
-                // Hit target
-                if (this.target.takeDamage(this.damage)) {
-                    // Enemy destroyed
-                    gameState.money += this.target.reward;
-                    gameState.score += this.target.reward * 10;
-                    const index = gameState.enemies.indexOf(this.target);
-                    if (index > -1) gameState.enemies.splice(index, 1);
+                
+                // Tree leaves (simple cross pattern)
+                for (let dx = -1; dx <= 1; dx++) {
+                    for (let dz = -1; dz <= 1; dz++) {
+                        for (let dy = 0; dy <= 1; dy++) {
+                            if (dx === 0 && dz === 0 && dy === 0) continue;
+                            addBlock(x + dx, groundHeight + 4 + dy, z + dz, 'grass');
+                        }
+                    }
                 }
-                return false;
             }
-            
-            // Move towards target
-            this.x += (dx / distance) * this.speed;
-            this.y += (dy / distance) * this.speed;
-            
-            return true;
-        }
-        
-        draw() {
-            ctx.fillStyle = '#fbbf24';
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
-            ctx.fill();
         }
     }
     
-    // Game functions
-    function spawnWave() {
-        const waveEnemies = Math.min(5 + gameState.wave, 15);
-        const enemyTypesList = ['bug', 'virus'];
+    function getGroundHeight(x, z) {
+        return Math.floor(3 * Math.sin(x * 0.1) * Math.cos(z * 0.1)) + 5;
+    }
+    
+    function addBlock(x, y, z, type) {
+        const key = `${x},${y},${z}`;
+        if (gameState.world.has(key)) return;
         
-        if (gameState.wave > 3) enemyTypesList.push('malware');
+        const block = new THREE.Mesh(blockGeometry, blockMaterials[type]);
+        block.position.set(x, y, z);
+        block.castShadow = true;
+        block.receiveShadow = true;
+        block.userData = { type: type, position: { x, y, z } };
         
-        for (let i = 0; i < waveEnemies; i++) {
-            setTimeout(() => {
-                const randomType = enemyTypesList[Math.floor(Math.random() * enemyTypesList.length)];
-                gameState.enemies.push(new Enemy(randomType));
-            }, i * 800);
+        scene.add(block);
+        gameState.world.set(key, block);
+    }
+    
+    function removeBlock(x, y, z) {
+        const key = `${x},${y},${z}`;
+        const block = gameState.world.get(key);
+        if (block) {
+            scene.remove(block);
+            gameState.world.delete(key);
         }
     }
     
-    function gameLoop() {
-        if (!gameState.isRunning) return;
+    // Raycasting for block interaction
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+    
+    function getBlockAtPosition(x, y, z) {
+        const key = `${Math.floor(x)},${Math.floor(y)},${Math.floor(z)}`;
+        return gameState.world.get(key);
+    }
+    
+    function handleBlockInteraction(event) {
+        if (!gameState.isPointerLocked) return;
         
-        // Clear canvas
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+        const intersects = raycaster.intersectObjects(Array.from(gameState.world.values()));
         
-        // Draw path
-        ctx.strokeStyle = '#d1d5db';
-        ctx.lineWidth = 40;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.beginPath();
-        ctx.moveTo(gameState.path[0].x, gameState.path[0].y);
-        for (let i = 1; i < gameState.path.length; i++) {
-            ctx.lineTo(gameState.path[i].x, gameState.path[i].y);
-        }
-        ctx.stroke();
-        
-        // Update and draw towers
-        gameState.towers.forEach(tower => {
-            tower.update();
-            tower.draw();
-        });
-        
-        // Update and draw projectiles
-        gameState.projectiles = gameState.projectiles.filter(projectile => {
-            const alive = projectile.update();
-            if (alive) projectile.draw();
-            return alive;
-        });
-        
-        // Update and draw enemies
-        gameState.enemies.forEach((enemy, index) => {
-            enemy.update();
-            enemy.draw();
+        if (intersects.length > 0) {
+            const intersection = intersects[0];
+            const block = intersection.object;
+            const face = intersection.face;
+            const point = intersection.point;
             
-            if (enemy.reachedEnd()) {
-                gameState.health -= 10;
-                gameState.enemies.splice(index, 1);
+            if (event.button === 0) {
+                // Left click - remove block
+                const pos = block.userData.position;
+                removeBlock(pos.x, pos.y, pos.z);
+            } else if (event.button === 2) {
+                // Right click - place block
+                const faceNormal = face.normal.clone();
+                faceNormal.transformDirection(block.matrixWorld);
+                
+                const newPos = {
+                    x: Math.floor(point.x + faceNormal.x * 0.5),
+                    y: Math.floor(point.y + faceNormal.y * 0.5),
+                    z: Math.floor(point.z + faceNormal.z * 0.5)
+                };
+                
+                // Don't place block where player is standing
+                const playerGridPos = {
+                    x: Math.floor(camera.position.x),
+                    y: Math.floor(camera.position.y),
+                    z: Math.floor(camera.position.z)
+                };
+                
+                if (!(newPos.x === playerGridPos.x && 
+                      (newPos.y === playerGridPos.y || newPos.y === playerGridPos.y - 1) && 
+                      newPos.z === playerGridPos.z)) {
+                    addBlock(newPos.x, newPos.y, newPos.z, gameState.selectedBlock);
+                }
             }
-        });
-        
-        // Check wave completion
-        if (gameState.enemies.length === 0 && gameState.isRunning) {
-            gameState.wave++;
-            gameState.money += 50;
-            gameState.isRunning = false;
-            updateUI();
         }
-        
-        // Check game over
-        if (gameState.health <= 0) {
-            gameOver();
-            return;
-        }
-        
-        updateUI();
-        requestAnimationFrame(gameLoop);
-    }
-    
-    function updateUI() {
-        document.getElementById('health').textContent = gameState.health;
-        document.getElementById('money').textContent = gameState.money;
-        document.getElementById('wave').textContent = gameState.wave;
-        document.getElementById('score').textContent = gameState.score;
-        
-        // Update tower buttons
-        document.querySelectorAll('.tower-btn').forEach(btn => {
-            const cost = parseInt(btn.dataset.cost);
-            btn.disabled = gameState.money < cost;
-        });
-        
-        // Update start button
-        const startBtn = document.getElementById('start-btn');
-        startBtn.disabled = gameState.isRunning;
-        startBtn.textContent = gameState.isRunning ? 'Wave in Progress' : `Start Wave ${gameState.wave}`;
-    }
-    
-    function gameOver() {
-        gameState.isRunning = false;
-        const highScore = localStorage.getItem('codeDefenderHighScore') || 0;
-        if (gameState.score > highScore) {
-            localStorage.setItem('codeDefenderHighScore', gameState.score);
-            document.getElementById('high-score').textContent = gameState.score;
-            alert(`New High Score: ${gameState.score}!`);
-        } else {
-            alert(`Game Over! Final Score: ${gameState.score}`);
-        }
-    }
-    
-    function resetGame() {
-        gameState = {
-            health: 100,
-            money: 150,
-            wave: 1,
-            score: 0,
-            isRunning: false,
-            selectedTower: null,
-            enemies: [],
-            towers: [],
-            projectiles: [],
-            path: gameState.path
-        };
-        
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        updateUI();
-        
-        // Clear tower selection
-        document.querySelectorAll('.tower-btn').forEach(btn => {
-            btn.classList.remove('selected');
-        });
     }
     
     // Event listeners
-    document.getElementById('start-btn').addEventListener('click', () => {
-        if (!gameState.isRunning) {
-            gameState.isRunning = true;
-            spawnWave();
-            gameLoop();
+    document.addEventListener('keydown', (event) => {
+        gameState.keys[event.code] = true;
+        
+        // Block selection with number keys
+        const blockTypes = ['grass', 'dirt', 'stone', 'wood', 'water'];
+        const keyNumber = parseInt(event.key);
+        if (keyNumber >= 1 && keyNumber <= 5) {
+            setSelectedBlock(blockTypes[keyNumber - 1]);
         }
     });
     
-    document.getElementById('reset-btn').addEventListener('click', resetGame);
+    document.addEventListener('keyup', (event) => {
+        gameState.keys[event.code] = false;
+    });
     
-    // Tower selection
-    document.querySelectorAll('.tower-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const towerType = btn.id.replace('-btn', '');
-            
-            // Clear previous selection
-            document.querySelectorAll('.tower-btn').forEach(b => b.classList.remove('selected'));
-            
-            if (gameState.selectedTower === towerType) {
-                gameState.selectedTower = null;
-            } else {
-                gameState.selectedTower = towerType;
-                btn.classList.add('selected');
+    // Pointer lock for mouse look
+    canvas.addEventListener('click', () => {
+        canvas.requestPointerLock();
+    });
+    
+    document.addEventListener('pointerlockchange', () => {
+        gameState.isPointerLocked = document.pointerLockElement === canvas;
+    });
+    
+    document.addEventListener('mousemove', (event) => {
+        if (!gameState.isPointerLocked) return;
+        
+        const sensitivity = 0.002;
+        gameState.mouseX -= event.movementX * sensitivity;
+        gameState.mouseY -= event.movementY * sensitivity;
+        gameState.mouseY = Math.max(-Math.PI/2, Math.min(Math.PI/2, gameState.mouseY));
+        
+        camera.rotation.order = 'YXZ';
+        camera.rotation.y = gameState.mouseX;
+        camera.rotation.x = gameState.mouseY;
+    });
+    
+    canvas.addEventListener('mousedown', handleBlockInteraction);
+    canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+    
+    // Block selection UI
+    function setSelectedBlock(blockType) {
+        gameState.selectedBlock = blockType;
+        
+        // Update UI
+        document.querySelectorAll('.block-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.dataset.block === blockType) {
+                btn.classList.add('active');
             }
         });
-    });
-    
-    // Canvas click for tower placement
-    canvas.addEventListener('click', (e) => {
-        if (!gameState.selectedTower) return;
         
-        const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        
-        // Check if position is valid (not on path, not too close to other towers)
-        let canPlace = true;
-        
-        // Check path collision
-        for (let i = 0; i < gameState.path.length - 1; i++) {
-            const p1 = gameState.path[i];
-            const p2 = gameState.path[i + 1];
-            
-            const distance = distanceToLineSegment(x, y, p1.x, p1.y, p2.x, p2.y);
-            if (distance < 35) {
-                canPlace = false;
-                break;
-            }
-        }
-        
-        // Check tower collision
-        gameState.towers.forEach(tower => {
-            const distance = Math.sqrt(Math.pow(tower.x - x, 2) + Math.pow(tower.y - y, 2));
-            if (distance < 50) canPlace = false;
-        });
-        
-        if (canPlace && gameState.money >= towerTypes[gameState.selectedTower].cost) {
-            gameState.towers.push(new Tower(x, y, gameState.selectedTower));
-            gameState.money -= towerTypes[gameState.selectedTower].cost;
-            updateUI();
-        }
-    });
-    
-    // Helper function for line distance
-    function distanceToLineSegment(px, py, x1, y1, x2, y2) {
-        const dx = x2 - x1;
-        const dy = y2 - y1;
-        const length = Math.sqrt(dx * dx + dy * dy);
-        
-        if (length === 0) return Math.sqrt((px - x1) * (px - x1) + (py - y1) * (py - y1));
-        
-        const t = Math.max(0, Math.min(1, ((px - x1) * dx + (py - y1) * dy) / (length * length)));
-        const projX = x1 + t * dx;
-        const projY = y1 + t * dy;
-        
-        return Math.sqrt((px - projX) * (px - projX) + (py - projY) * (py - projY));
+        document.getElementById('selected-block').textContent = 
+            blockType.charAt(0).toUpperCase() + blockType.slice(1);
     }
     
-    // Initialize high score display
-    const savedHighScore = localStorage.getItem('codeDefenderHighScore') || 0;
-    document.getElementById('high-score').textContent = savedHighScore;
+    document.querySelectorAll('.block-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            setSelectedBlock(btn.dataset.block);
+        });
+    });
     
-    // Initial UI update
-    updateUI();
+    // Physics and movement
+    function updateMovement(deltaTime) {
+        const speed = 10;
+        
+        controls.direction.set(0, 0, 0);
+        
+        if (gameState.keys['KeyW']) controls.direction.z -= 1;
+        if (gameState.keys['KeyS']) controls.direction.z += 1;
+        if (gameState.keys['KeyA']) controls.direction.x -= 1;
+        if (gameState.keys['KeyD']) controls.direction.x += 1;
+        
+        controls.direction.normalize();
+        
+        // Apply camera rotation to movement direction
+        const euler = new THREE.Euler(0, camera.rotation.y, 0, 'YXZ');
+        controls.direction.applyEuler(euler);
+        
+        // Simple gravity
+        controls.velocity.y -= 30 * deltaTime;
+        
+        // Apply movement
+        if (controls.direction.x !== 0 || controls.direction.z !== 0) {
+            controls.velocity.x = controls.direction.x * speed;
+            controls.velocity.z = controls.direction.z * speed;
+        } else {
+            controls.velocity.x *= 0.8;
+            controls.velocity.z *= 0.8;
+        }
+        
+        // Update position
+        camera.position.x += controls.velocity.x * deltaTime;
+        camera.position.z += controls.velocity.z * deltaTime;
+        camera.position.y += controls.velocity.y * deltaTime;
+        
+        // Simple collision detection with ground
+        const groundHeight = getGroundHeight(camera.position.x, camera.position.z) + 1.8;
+        if (camera.position.y < groundHeight) {
+            camera.position.y = groundHeight;
+            controls.velocity.y = 0;
+            controls.canJump = true;
+        }
+        
+        // Jump
+        if (gameState.keys['Space'] && controls.canJump) {
+            controls.velocity.y = 10;
+            controls.canJump = false;
+        }
+        
+        // Update UI
+        document.getElementById('position').textContent = 
+            `${Math.floor(camera.position.x)}, ${Math.floor(camera.position.y)}, ${Math.floor(camera.position.z)}`;
+    }
+    
+    // Animation loop
+    let lastTime = 0;
+    let frameCount = 0;
+    let lastFpsUpdate = 0;
+    
+    function animate(currentTime) {
+        requestAnimationFrame(animate);
+        
+        const deltaTime = (currentTime - lastTime) / 1000;
+        lastTime = currentTime;
+        
+        updateMovement(deltaTime);
+        
+        renderer.render(scene, camera);
+        
+        // Update FPS counter
+        frameCount++;
+        if (currentTime - lastFpsUpdate > 1000) {
+            document.getElementById('fps').textContent = frameCount;
+            frameCount = 0;
+            lastFpsUpdate = currentTime;
+        }
+    }
+    
+    // Handle window resize
+    function onWindowResize() {
+        camera.aspect = canvas.clientWidth / canvas.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+    }
+    
+    window.addEventListener('resize', onWindowResize);
+    
+    // Initialize the world and start the game
+    generateTerrain();
+    animate(0);
+    
+    console.log('Minecraft clone initialized! Click on the game area and use WASD to move, mouse to look around.');
 }

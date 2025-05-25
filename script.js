@@ -1,5 +1,8 @@
 // Smooth scrolling for navigation links
 document.addEventListener('DOMContentLoaded', function() {
+    // Cache header element reference
+    const header = document.querySelector('.header');
+    
     // Add smooth scrolling to all links
     const links = document.querySelectorAll('a[href^="#"]');
     
@@ -11,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const targetSection = document.querySelector(targetId);
             
             if (targetSection) {
-                const headerHeight = document.querySelector('.header').offsetHeight;
+                const headerHeight = header.offsetHeight;
                 const targetPosition = targetSection.offsetTop - headerHeight;
                 
                 window.scrollTo({
@@ -49,8 +52,6 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('scroll', setActiveLink);
     
     // Header background opacity on scroll
-    const header = document.querySelector('.header');
-    
     window.addEventListener('scroll', function() {
         if (window.scrollY > 50) {
             header.style.background = 'rgba(255, 255, 255, 0.98)';

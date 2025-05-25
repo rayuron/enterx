@@ -17,6 +17,7 @@
             <ul class="nav-links">
                 <li><a href="#about">About</a></li>
                 <li><a href="#services">Services</a></li>
+                <li><a href="#game">Game</a></li>
                 <li><a href="#technology">Technology</a></li>
                 <li><a href="#contact">Contact</a></li>
             </ul>
@@ -89,6 +90,65 @@
                         <div class="service-icon">📱</div>
                         <h3>Mobile Development</h3>
                         <p>Cross-platform mobile applications with native performance and user experience.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="game" class="section section-alt">
+            <div class="container">
+                <h2>Code Defender</h2>
+                <p class="lead">Protect your codebase from bugs and security threats in this interactive tower defense game!</p>
+                <div class="game-container">
+                    <div class="game-ui">
+                        <div class="game-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Health:</span>
+                                <span id="health" class="stat-value">100</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Score:</span>
+                                <span id="score" class="stat-value">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Credits:</span>
+                                <span id="credits" class="stat-value">50</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Wave:</span>
+                                <span id="wave" class="stat-value">1</span>
+                            </div>
+                        </div>
+                        <div class="game-controls">
+                            <button id="startBtn" class="game-btn">Start Game</button>
+                            <button id="pauseBtn" class="game-btn" disabled>Pause</button>
+                            <button id="resetBtn" class="game-btn">Reset</button>
+                        </div>
+                        <div class="tower-shop">
+                            <div class="shop-title">Defense Tools</div>
+                            <div class="tower-item" data-tower="antivirus" data-cost="10">
+                                <div class="tower-icon">🛡️</div>
+                                <div class="tower-name">Antivirus</div>
+                                <div class="tower-cost">10 credits</div>
+                            </div>
+                            <div class="tower-item" data-tower="firewall" data-cost="15">
+                                <div class="tower-icon">🔥</div>
+                                <div class="tower-name">Firewall</div>
+                                <div class="tower-cost">15 credits</div>
+                            </div>
+                            <div class="tower-item" data-tower="tester" data-cost="20">
+                                <div class="tower-icon">🧪</div>
+                                <div class="tower-name">Unit Test</div>
+                                <div class="tower-cost">20 credits</div>
+                            </div>
+                        </div>
+                    </div>
+                    <canvas id="gameCanvas" width="800" height="500"></canvas>
+                    <div class="game-info">
+                        <p>Click on the canvas to place defensive tools. Different tools have unique strengths against various threats!</p>
+                        <div class="high-score">
+                            High Score: <span id="highScore">0</span>
+                        </div>
                     </div>
                 </div>
             </div>

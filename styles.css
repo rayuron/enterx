@@ -362,6 +362,186 @@ body {
     }
 }
 
+/* Game Styles */
+.game-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.game-ui {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.game-stats {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-label {
+    font-weight: 600;
+    color: #4b5563;
+    margin-right: 0.5rem;
+}
+
+.stat-value {
+    font-weight: 700;
+    color: #2563eb;
+    font-size: 1.1rem;
+}
+
+.game-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.game-btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    background: #2563eb;
+    color: white;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.game-btn:hover:not(:disabled) {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+}
+
+.game-btn:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.tower-shop {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.shop-title {
+    font-weight: 600;
+    color: #1f2937;
+    margin-right: 0.5rem;
+}
+
+.tower-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.75rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    min-width: 80px;
+}
+
+.tower-item:hover {
+    border-color: #2563eb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.tower-item.selected {
+    border-color: #2563eb;
+    background: #dbeafe;
+}
+
+.tower-item.affordable {
+    border-color: #10b981;
+}
+
+.tower-item.expensive {
+    border-color: #ef4444;
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.tower-icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.tower-name {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #1f2937;
+    text-align: center;
+}
+
+.tower-cost {
+    font-size: 0.7rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+}
+
+#gameCanvas {
+    width: 100%;
+    max-width: 800px;
+    height: 500px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    background: #f9fafb;
+    cursor: crosshair;
+    display: block;
+    margin: 0 auto;
+}
+
+.game-info {
+    margin-top: 1rem;
+    text-align: center;
+    color: #6b7280;
+}
+
+.high-score {
+    margin-top: 0.5rem;
+    font-weight: 600;
+    color: #2563eb;
+}
+
+/* Game responsive design */
+@media (max-width: 768px) {
+    .game-container {
+        padding: 1rem;
+    }
+    
+    .game-ui {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .game-stats {
+        justify-content: center;
+    }
+    
+    .tower-shop {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    #gameCanvas {
+        height: 400px;
+    }
+}
+
 /* Smooth scrolling */
 html {
     scroll-behavior: smooth;

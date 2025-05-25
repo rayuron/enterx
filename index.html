@@ -7,6 +7,7 @@
     <meta name="description" content="EnterX delivers cutting-edge technical solutions and innovative software development services.">
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
     <header class="header">
@@ -132,85 +133,96 @@
 
         <section id="game" class="section section-alt">
             <div class="container">
-                <h2>🎮 Code Defender</h2>
-                <p class="lead">Defend your codebase from bugs and security vulnerabilities in this tower defense game!</p>
+                <h2>⛏️ Minecraft Clone</h2>
+                <p class="lead">Experience a voxel-based world built with Three.js! Use WASD to move, mouse to look around, and click to place/break blocks.</p>
                 
-                <div class="game-container">
-                    <div class="game-info">
-                        <div class="game-stats">
-                            <div class="stat-item">
-                                <span class="stat-label">Health:</span>
-                                <span id="health">100</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-label">Money:</span>
-                                <span id="money">150</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-label">Wave:</span>
-                                <span id="wave">1</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-label">Score:</span>
-                                <span id="score">0</span>
-                            </div>
-                        </div>
-                        
-                        <div class="tower-shop">
-                            <h3>🛠️ Defensive Tools</h3>
-                            <div class="tower-buttons">
-                                <button id="antivirus-btn" class="tower-btn" data-cost="50">
-                                    🛡️ Antivirus<br><small>$50</small>
-                                </button>
-                                <button id="firewall-btn" class="tower-btn" data-cost="75">
-                                    🔥 Firewall<br><small>$75</small>
-                                </button>
-                                <button id="unittest-btn" class="tower-btn" data-cost="100">
-                                    🧪 Unit Test<br><small>$100</small>
-                                </button>
+                <div class="minecraft-container">
+                    <div class="minecraft-info">
+                        <div class="minecraft-controls">
+                            <h3>🎮 Controls</h3>
+                            <div class="control-list">
+                                <div class="control-item">
+                                    <span class="control-key">WASD</span>
+                                    <span>Move around</span>
+                                </div>
+                                <div class="control-item">
+                                    <span class="control-key">Mouse</span>
+                                    <span>Look around</span>
+                                </div>
+                                <div class="control-item">
+                                    <span class="control-key">Left Click</span>
+                                    <span>Break blocks</span>
+                                </div>
+                                <div class="control-item">
+                                    <span class="control-key">Right Click</span>
+                                    <span>Place blocks</span>
+                                </div>
+                                <div class="control-item">
+                                    <span class="control-key">1-5</span>
+                                    <span>Select block type</span>
+                                </div>
                             </div>
                         </div>
                         
-                        <div class="game-controls">
-                            <button id="start-btn" class="btn btn-primary">Start Wave</button>
-                            <button id="reset-btn" class="btn btn-secondary">Reset Game</button>
+                        <div class="block-selector">
+                            <h3>🧱 Block Palette</h3>
+                            <div class="block-types">
+                                <button class="block-btn active" data-block="grass">🌱 Grass</button>
+                                <button class="block-btn" data-block="dirt">🟫 Dirt</button>
+                                <button class="block-btn" data-block="stone">🪨 Stone</button>
+                                <button class="block-btn" data-block="wood">🪵 Wood</button>
+                                <button class="block-btn" data-block="water">💧 Water</button>
+                            </div>
                         </div>
                         
-                        <div class="high-score">
-                            <h3>🏆 High Score</h3>
-                            <span id="high-score">0</span>
+                        <div class="game-info-panel">
+                            <div class="info-item">
+                                <span class="info-label">Position:</span>
+                                <span id="position">0, 0, 0</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Selected:</span>
+                                <span id="selected-block">Grass</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">FPS:</span>
+                                <span id="fps">60</span>
+                            </div>
                         </div>
                     </div>
                     
-                    <canvas id="gameCanvas" width="600" height="400"></canvas>
+                    <div class="minecraft-viewport">
+                        <canvas id="minecraftCanvas"></canvas>
+                        <div class="crosshair"></div>
+                    </div>
                 </div>
                 
-                <div class="game-legend">
-                    <h3>📖 Game Guide</h3>
-                    <div class="legend-grid">
-                        <div class="legend-item">
-                            <span class="legend-icon">🐛</span>
-                            <span>Bug - Slow but persistent</span>
+                <div class="minecraft-instructions">
+                    <h3>📖 How to Play</h3>
+                    <div class="instruction-grid">
+                        <div class="instruction-item">
+                            <span class="instruction-icon">🚶</span>
+                            <span>Use WASD keys to move around the world</span>
                         </div>
-                        <div class="legend-item">
-                            <span class="legend-icon">🦠</span>
-                            <span>Virus - Fast and dangerous</span>
+                        <div class="instruction-item">
+                            <span class="instruction-icon">👀</span>
+                            <span>Move your mouse to look around</span>
                         </div>
-                        <div class="legend-item">
-                            <span class="legend-icon">💀</span>
-                            <span>Malware - Tanky boss enemy</span>
+                        <div class="instruction-item">
+                            <span class="instruction-icon">⛏️</span>
+                            <span>Left-click to break blocks and collect them</span>
                         </div>
-                        <div class="legend-item">
-                            <span class="legend-icon">🛡️</span>
-                            <span>Antivirus - Balanced defense</span>
+                        <div class="instruction-item">
+                            <span class="instruction-icon">🧱</span>
+                            <span>Right-click to place the selected block type</span>
                         </div>
-                        <div class="legend-item">
-                            <span class="legend-icon">🔥</span>
-                            <span>Firewall - High damage</span>
+                        <div class="instruction-item">
+                            <span class="instruction-icon">🎨</span>
+                            <span>Use number keys 1-5 or click buttons to select block types</span>
                         </div>
-                        <div class="legend-item">
-                            <span class="legend-icon">🧪</span>
-                            <span>Unit Test - Slow but powerful</span>
+                        <div class="instruction-item">
+                            <span class="instruction-icon">🌍</span>
+                            <span>Explore the randomly generated terrain</span>
                         </div>
                     </div>
                 </div>

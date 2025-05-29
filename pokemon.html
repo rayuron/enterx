@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Pokemon Battle - EnterX</title>
+    <meta name="description" content="Experience Pokemon battles in quantum digital reality with EnterX technology.">
+    <meta name="theme-color" content="#00e5ff">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="pokemon-styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="cyberpunk-grid"></div>
+    <div class="neural-network"></div>
+    
+    <header class="header">
+        <nav class="nav">
+            <div class="nav-brand">
+                <div class="logo-container">
+                    <div class="logo-core"></div>
+                    <span class="brand-text">ENTER<span class="brand-x">X</span></span>
+                </div>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html" data-text="HOME">HOME</a></li>
+                <li><a href="art.html" data-text="ART GALLERY">ART GALLERY</a></li>
+                <li><a href="#pokemon" data-text="POKEMON" class="active">POKEMON</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="pokemon-main">
+        <section class="pokemon-hero">
+            <div class="container">
+                <h1 class="pokemon-title">
+                    <span class="title-line">QUANTUM</span>
+                    <span class="title-line glow">POKEMON</span>
+                    <span class="title-line">BATTLE</span>
+                </h1>
+                <p class="pokemon-subtitle">
+                    Enter the digital realm where Pokemon exist as quantum entities, 
+                    battling across parallel dimensions in neural-enhanced combat.
+                </p>
+            </div>
+        </section>
+
+        <section class="battle-arena">
+            <div class="arena-container">
+                <div class="battle-interface">
+                    <div class="battle-header">
+                        <span class="interface-title">QUANTUM_BATTLE_SYSTEM_V2.1</span>
+                        <div class="battle-status">
+                            <span class="status-indicator online"></span>
+                            <span>NEURAL LINK ACTIVE</span>
+                        </div>
+                    </div>
+
+                    <div class="battle-field">
+                        <div class="enemy-section">
+                            <div class="pokemon-info enemy-info">
+                                <div class="pokemon-name" id="enemy-name">Wild Pikachu</div>
+                                <div class="health-bar-container">
+                                    <div class="health-label">HP</div>
+                                    <div class="health-bar">
+                                        <div class="health-fill" id="enemy-health"></div>
+                                    </div>
+                                    <div class="health-text" id="enemy-health-text">100/100</div>
+                                </div>
+                                <div class="level-badge" id="enemy-level">LVL 25</div>
+                            </div>
+                            <div class="pokemon-sprite enemy-sprite" id="enemy-sprite">
+                                <div class="sprite-glow"></div>
+                                <div class="pokemon-image">⚡</div>
+                            </div>
+                        </div>
+
+                        <div class="vs-indicator">
+                            <div class="vs-text">VS</div>
+                            <div class="quantum-particles"></div>
+                        </div>
+
+                        <div class="player-section">
+                            <div class="pokemon-sprite player-sprite" id="player-sprite">
+                                <div class="sprite-glow"></div>
+                                <div class="pokemon-image">🔥</div>
+                            </div>
+                            <div class="pokemon-info player-info">
+                                <div class="pokemon-name" id="player-name">Charizard</div>
+                                <div class="health-bar-container">
+                                    <div class="health-label">HP</div>
+                                    <div class="health-bar">
+                                        <div class="health-fill" id="player-health"></div>
+                                    </div>
+                                    <div class="health-text" id="player-health-text">120/120</div>
+                                </div>
+                                <div class="level-badge" id="player-level">LVL 30</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="battle-log" id="battle-log">
+                        <div class="log-header">QUANTUM BATTLE LOG</div>
+                        <div class="log-content" id="log-content">
+                            <div class="log-entry">Welcome to the Quantum Pokemon Battle Arena!</div>
+                            <div class="log-entry">Neural systems initialized. Battle commencing...</div>
+                        </div>
+                    </div>
+
+                    <div class="battle-controls">
+                        <div class="controls-header">BATTLE INTERFACE</div>
+                        <div class="action-buttons">
+                            <button class="action-btn attack-btn" id="attack-btn" data-text="QUANTUM ATTACK">
+                                <span class="btn-icon">⚔️</span>
+                                <span>QUANTUM ATTACK</span>
+                            </button>
+                            <button class="action-btn defend-btn" id="defend-btn" data-text="NEURAL SHIELD">
+                                <span class="btn-icon">🛡️</span>
+                                <span>NEURAL SHIELD</span>
+                            </button>
+                            <button class="action-btn special-btn" id="special-btn" data-text="REALITY WARP">
+                                <span class="btn-icon">✨</span>
+                                <span>REALITY WARP</span>
+                            </button>
+                            <button class="action-btn heal-btn" id="heal-btn" data-text="QUANTUM HEAL">
+                                <span class="btn-icon">💊</span>
+                                <span>QUANTUM HEAL</span>
+                            </button>
+                        </div>
+                        <div class="battle-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Battles Won:</span>
+                                <span class="stat-value" id="wins-count">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Quantum Energy:</span>
+                                <span class="stat-value" id="energy-level">100%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quantum-effects">
+                    <div class="particle-field"></div>
+                    <div class="energy-waves"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="pokemon-features">
+            <div class="container">
+                <h2 class="section-title">
+                    <span class="title-icon">🎮</span>
+                    QUANTUM FEATURES
+                </h2>
+                
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <h3>Neural Combat</h3>
+                        <p>Experience Pokemon battles enhanced by quantum neural networks for unprecedented realism.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🌌</div>
+                        <h3>Parallel Dimensions</h3>
+                        <p>Battle across multiple quantum realities simultaneously, affecting outcomes in real-time.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🧠</div>
+                        <h3>AI Adaptation</h3>
+                        <p>Enemy Pokemon learn and adapt using advanced machine learning algorithms.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2025 EnterX. All quantum rights reserved.</p>
+                <p>Pokemon battles powered by quantum computing technology.</p>
+            </div>
+            <div class="quantum-signature">
+                <div class="signature-pattern"></div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="pokemon-script.js"></script>
+</body>
+</html>

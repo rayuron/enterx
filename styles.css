@@ -422,6 +422,18 @@ body {
     box-shadow: 0 0 30px var(--secondary-color);
 }
 
+.btn-pokemon {
+    background: var(--gradient-tertiary);
+    color: var(--text-primary);
+    border: 2px solid var(--accent-color);
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+}
+
+.btn-pokemon:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 30px var(--accent-color);
+}
+
 /* Hero Visual */
 .hero-visual {
     position: relative;

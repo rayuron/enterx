@@ -98,18 +98,18 @@ const animate = () => {
     if (overlay) {
         overlay.style.setProperty('--pointer-x', `${overlayPointer.x * 100}%`);
         overlay.style.setProperty('--pointer-y', `${overlayPointer.y * 100}%`);
-        overlay.style.setProperty('--tilt-x', `${(overlayPointer.x - 0.5) * 10}deg`);
-        overlay.style.setProperty('--tilt-y', `${(0.5 - overlayPointer.y) * 8}deg`);
+        overlay.style.setProperty('--tilt-x', `${(overlayPointer.x - 0.5) * 14}deg`);
+        overlay.style.setProperty('--tilt-y', `${(0.5 - overlayPointer.y) * 11}deg`);
     }
 
-    const parallaxX = pointer.x * 0.12;
-    const parallaxY = pointer.y * 0.12;
+    const parallaxX = pointer.x * 0.16;
+    const parallaxY = pointer.y * 0.16;
 
-    root.rotation.x = parallaxY * 0.6 + Math.sin(elapsed * 0.6) * 0.02;
-    root.rotation.y = -parallaxX * 0.6 + Math.cos(elapsed * 0.4) * 0.02;
+    root.rotation.x = parallaxY * 0.75 + Math.sin(elapsed * 0.6) * 0.02;
+    root.rotation.y = -parallaxX * 0.75 + Math.cos(elapsed * 0.4) * 0.02;
     root.rotation.z = Math.sin(elapsed * 0.2) * 0.04;
-    root.position.x = parallaxX * 0.4;
-    root.position.y = -parallaxY * 0.4;
+    root.position.x = parallaxX * 0.5;
+    root.position.y = -parallaxY * 0.5;
 
     hudGroup.rotation.z = Math.sin(elapsed * 0.35) * 0.06;
     hudGroup.position.z = Math.sin(elapsed * 0.6) * 0.08;

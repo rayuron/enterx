@@ -1,11 +1,11 @@
 :root {
     color-scheme: light;
-    --bg-start: #05070d;
-    --bg-end: #101726;
-    --ink: rgba(16, 24, 32, 0.84);
-    --glass-stroke: rgba(34, 34, 34, 0.08);
-    --glass-highlight: rgba(255, 255, 255, 0.85);
-    --glass-flare: rgba(28, 32, 48, 0.08);
+    --bg-start: #f3f7ff;
+    --bg-end: #c9dfff;
+    --ink: rgba(14, 32, 60, 0.82);
+    --glass-stroke: rgba(255, 255, 255, 0.45);
+    --glass-highlight: rgba(255, 255, 255, 0.65);
+    --glass-flare: rgba(40, 85, 165, 0.12);
     font-family: "Inter", "Noto Sans JP", "IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     font-feature-settings: "tnum" on, "ss01" on;
 }
@@ -18,9 +18,9 @@
 
 body {
     min-height: 100vh;
-    background: radial-gradient(circle at 20% 20%, rgba(32, 41, 66, 0.45), transparent 55%),
-        radial-gradient(circle at 80% 80%, rgba(18, 24, 40, 0.5), transparent 50%),
-        linear-gradient(160deg, var(--bg-start), var(--bg-end));
+    background: radial-gradient(circle at 25% 20%, rgba(255, 255, 255, 0.7), transparent 60%),
+        radial-gradient(circle at 75% 80%, rgba(173, 202, 255, 0.55), transparent 55%),
+        linear-gradient(165deg, var(--bg-start), var(--bg-end));
     color: var(--ink);
     display: grid;
     place-items: center;
@@ -57,13 +57,13 @@ body {
     position: relative;
     padding: 1.4rem 2.2rem;
     border-radius: 999px;
-    background: linear-gradient(150deg, rgba(255, 255, 255, 0.92), rgba(239, 244, 251, 0.86));
-    backdrop-filter: blur(18px) saturate(150%);
-    border: 1px solid var(--glass-stroke);
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.32), rgba(213, 229, 255, 0.24));
+    backdrop-filter: blur(24px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.55);
     box-shadow:
-        0 40px 120px rgba(0, 0, 0, 0.18),
+        0 40px 120px rgba(60, 110, 180, 0.18),
         inset 0 1px 0 var(--glass-highlight),
-        inset 0 -18px 32px rgba(0, 0, 0, 0.06);
+        inset 0 -18px 32px rgba(58, 93, 160, 0.12);
     transform: rotateX(var(--tilt-y, 0deg)) rotateY(var(--tilt-x, 0deg));
     transform-style: preserve-3d;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -80,14 +80,16 @@ body {
 }
 
 .overlay::before {
-    background: radial-gradient(circle at calc(var(--pointer-x, 50%) + 4%) calc(var(--pointer-y, 50%) - 10%), rgba(255, 255, 255, 0.55), transparent 60%);
+    background: radial-gradient(circle at calc(var(--pointer-x, 50%) + 4%) calc(var(--pointer-y, 50%) - 10%), rgba(255, 255, 255, 0.75), transparent 62%);
     mix-blend-mode: screen;
     opacity: 0.9;
 }
 
 .overlay::after {
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    box-shadow: inset 0 0 18px var(--glass-flare);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    box-shadow:
+        inset 0 0 22px var(--glass-flare),
+        inset 0 0 2px rgba(255, 255, 255, 0.4);
 }
 
 .logotype {
@@ -95,7 +97,7 @@ body {
     font-weight: 400;
     letter-spacing: 0.8em;
     text-transform: uppercase;
-    color: rgba(0, 0, 0, 0.8);
+    color: rgba(0, 33, 85, 0.78);
     text-align: center;
     text-rendering: geometricPrecision;
     padding-left: 0.8em;
@@ -114,9 +116,9 @@ body {
 
 .overlay.is-active {
     box-shadow:
-        0 70px 140px rgba(0, 0, 0, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.5),
-        inset 0 -18px 32px rgba(0, 0, 0, 0.08);
+        0 70px 140px rgba(52, 93, 160, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6),
+        inset 0 -18px 32px rgba(58, 93, 160, 0.14);
 }
 
 @media (prefers-reduced-motion: reduce) {

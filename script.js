@@ -6,6 +6,8 @@ if (!container) {
     throw new Error('Missing .webgl container');
 }
 
+const overlay = document.querySelector('.overlay');
+
 const scene = new THREE.Scene();
 
 const camera = new THREE.PerspectiveCamera(44, window.innerWidth / window.innerHeight, 0.1, 30);
@@ -223,10 +225,29 @@ root.add(sparks);
 
 const pointer = new THREE.Vector2(0, 0);
 const pointerTarget = new THREE.Vector2(0, 0);
-window.addEventListener('pointermove', (event) => {
-    const x = (event.clientX / window.innerWidth) * 2 - 1;
-    const y = (event.clientY / window.innerHeight) * 2 - 1;
-    pointerTarget.set(x, y);
+const glassPointer = new THREE.Vector2(0.5, 0.5);
+const glassTarget = new THREE.Vector2(0.5, 0.5);
+
+const updatePointerTargets = (event) => {
+    const normX = event.clientX / window.innerWidth;
+    const normY = event.clientY / window.innerHeight;
+    pointerTarget.set(normX * 2 - 1, normY * 2 - 1);
+    glassTarget.set(normX, normY);
+    overlay?.classList.add('is-active');
+};
+
+window.addEventListener('pointermove', updatePointerTargets);
+
+window.addEventListener('pointerleave', () => {
+    pointerTarget.set(0, 0);
+    glassTarget.set(0.5, 0.5);
+    overlay?.classList.remove('is-active');
+});
+
+window.addEventListener('blur', () => {
+    pointerTarget.set(0, 0);
+    glassTarget.set(0.5, 0.5);
+    overlay?.classList.remove('is-active');
 });
 
 const resizeRenderer = () => {
@@ -246,6 +267,16 @@ const animate = () => {
 
     pointer.x += (pointerTarget.x - pointer.x) * 0.05;
     pointer.y += (pointerTarget.y - pointer.y) * 0.05;
+
+    glassPointer.x += (glassTarget.x - glassPointer.x) * 0.08;
+    glassPointer.y += (glassTarget.y - glassPointer.y) * 0.08;
+
+    if (overlay) {
+        overlay.style.setProperty('--pointer-x', `${glassPointer.x * 100}%`);
+        overlay.style.setProperty('--pointer-y', `${glassPointer.y * 100}%`);
+        overlay.style.setProperty('--tilt-x', `${(glassPointer.x - 0.5) * 14}deg`);
+        overlay.style.setProperty('--tilt-y', `${(0.5 - glassPointer.y) * 10}deg`);
+    }
 
     petalsData.forEach((data) => {
         const { mesh, baseRotationX, baseRotationZ, baseY, phase } = data;

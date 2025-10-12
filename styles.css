@@ -33,7 +33,8 @@ body {
 .webgl {
     position: fixed;
     inset: 0;
-    z-index: -2;
+    z-index: 0;
+    pointer-events: none;
 }
 
 .webgl canvas {
@@ -46,7 +47,7 @@ body {
 }
 
 .webgl canvas.bird-canvas {
-    z-index: -1;
+    z-index: 0;
     filter: contrast(1.08) saturate(1.1);
 }
 
@@ -73,6 +74,7 @@ body {
     transform: rotateX(var(--tilt-y, 0deg)) rotateY(var(--tilt-x, 0deg));
     transform-style: preserve-3d;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    z-index: 1;
 }
 
 .overlay::before,

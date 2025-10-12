@@ -23,7 +23,6 @@ const initBirdSketch = () => {
             p.pixelDensity(Math.min(window.devicePixelRatio || 1, 2));
             canvas.elt.classList.add('bird-canvas');
             canvas.elt.setAttribute('aria-hidden', 'true');
-            canvas.elt.style.zIndex = '-1';
             canvas.elt.style.pointerEvents = 'none';
             p.noFill();
             p.strokeJoin(p.ROUND);

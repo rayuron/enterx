@@ -1,7 +1,7 @@
 :root {
     color-scheme: light;
-    --bg-start: #f7f8fb;
-    --bg-end: #eef1f7;
+    --bg-start: #05070d;
+    --bg-end: #101726;
     --ink: rgba(16, 24, 32, 0.84);
     --glass-stroke: rgba(34, 34, 34, 0.08);
     --glass-highlight: rgba(255, 255, 255, 0.85);
@@ -18,7 +18,9 @@
 
 body {
     min-height: 100vh;
-    background: linear-gradient(160deg, var(--bg-start), var(--bg-end));
+    background: radial-gradient(circle at 20% 20%, rgba(32, 41, 66, 0.45), transparent 55%),
+        radial-gradient(circle at 80% 80%, rgba(18, 24, 40, 0.5), transparent 50%),
+        linear-gradient(160deg, var(--bg-start), var(--bg-end));
     color: var(--ink);
     display: grid;
     place-items: center;
@@ -44,8 +46,7 @@ body {
 
 .webgl canvas.bird-canvas {
     z-index: -1;
-    mix-blend-mode: multiply;
-    filter: contrast(0.92) saturate(0.84);
+    filter: contrast(1.08) saturate(1.1);
 }
 
 .overlay {

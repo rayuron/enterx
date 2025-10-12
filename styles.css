@@ -1,10 +1,14 @@
 :root {
-    color-scheme: light;
-    --bg: #fafafa;
-    --ink: #0d0d0d;
-    --ink-soft: rgba(13, 13, 13, 0.5);
-    --accent: rgba(13, 13, 13, 0.14);
-    font-family: "Noto Sans JP", "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    color-scheme: dark;
+    --bg: #010103;
+    --ink: rgba(235, 242, 255, 0.78);
+    --glass-base: rgba(7, 12, 28, 0.58);
+    --glass-inner: rgba(16, 24, 48, 0.44);
+    --glass-stroke: rgba(146, 207, 255, 0.18);
+    --glass-highlight: rgba(160, 231, 255, 0.5);
+    --glass-flare: rgba(236, 157, 255, 0.32);
+    font-family: "Inter", "Noto Sans JP", "IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-feature-settings: "tnum" on, "ss01" on;
 }
 
 * {
@@ -15,13 +19,28 @@
 
 body {
     min-height: 100vh;
+    background: var(--bg);
+    color: var(--ink);
     display: grid;
     place-items: center;
-    background: radial-gradient(circle at 25% 15%, rgba(0, 0, 0, 0.06), transparent 42%),
-                radial-gradient(circle at 78% 72%, rgba(0, 0, 0, 0.04), transparent 48%),
-                var(--bg);
-    color: var(--ink);
     overflow: hidden;
+    position: relative;
+    perspective: 1200px;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(circle at 16% 22%, rgba(102, 196, 255, 0.18), transparent 42%),
+        radial-gradient(circle at 86% 68%, rgba(250, 142, 255, 0.16), transparent 54%),
+        radial-gradient(circle at 58% 36%, rgba(136, 96, 255, 0.12), transparent 62%);
+    pointer-events: none;
+    mix-blend-mode: screen;
+    filter: blur(12px);
+    transform: scale(1.1);
+    z-index: -1;
 }
 
 .webgl {
@@ -36,51 +55,83 @@ body {
     display: block;
 }
 
-.hero {
+.overlay {
+    --pointer-x: 50%;
+    --pointer-y: 50%;
+    --tilt-x: 0deg;
+    --tilt-y: 0deg;
     position: relative;
-    text-align: center;
-    padding: clamp(4rem, 6vw, 6.5rem) clamp(2rem, 5vw, 4rem);
-    isolation: isolate;
+    padding: 1.4rem 2.2rem;
+    border-radius: 999px;
+    background:
+        radial-gradient(circle at var(--pointer-x, 50%) var(--pointer-y, 50%), rgba(120, 190, 255, 0.28), transparent 56%),
+        conic-gradient(from 120deg at var(--pointer-x, 50%) var(--pointer-y, 50%), rgba(236, 157, 255, 0.16), transparent 40%),
+        linear-gradient(160deg, rgba(6, 9, 18, 0.6), rgba(12, 18, 32, 0.86));
+    backdrop-filter: blur(34px) saturate(200%);
+    border: 1px solid var(--glass-stroke);
+    box-shadow:
+        0 60px 140px rgba(0, 0, 0, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.16),
+        inset 0 -18px 36px rgba(8, 12, 26, 0.8);
+    transform: rotateX(var(--tilt-y, 0deg)) rotateY(var(--tilt-x, 0deg));
+    transform-style: preserve-3d;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.hero::before {
+.overlay::before,
+.overlay::after {
     content: "";
     position: absolute;
-    inset: -22% -28%;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0));
-    filter: blur(60px);
-    z-index: -1;
-    opacity: 0.9;
-}
-
-.wordmark {
-    position: relative;
-    display: inline-block;
-    font-size: clamp(4.5rem, 15vw, 11rem);
-    font-weight: 300;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: transparent;
-    -webkit-text-stroke: 1px var(--ink);
-    text-rendering: optimizeLegibility;
-}
-
-.wordmark::after {
-    content: attr(data-glow);
-    position: absolute;
-    inset: 0;
-    color: var(--ink);
-    opacity: 0.08;
-    filter: blur(10px);
+    inset: 8px;
+    border-radius: 999px;
     pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.overlay::before {
+    background:
+        radial-gradient(circle at calc(var(--pointer-x, 50%) + 2%) calc(var(--pointer-y, 50%) - 12%), rgba(255, 255, 255, 0.28), transparent 55%),
+        linear-gradient(130deg, rgba(255, 255, 255, 0.12), transparent 62%);
+    mix-blend-mode: screen;
+    opacity: 0.8;
+}
+
+.overlay::after {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0 0 18px rgba(160, 231, 255, 0.08);
+}
+
+.logotype {
+    font-size: clamp(0.7rem, 1.6vw, 0.95rem);
+    font-weight: 300;
+    letter-spacing: 0.8em;
+    text-transform: uppercase;
+    color: var(--ink);
+    text-align: center;
+    text-rendering: geometricPrecision;
+    padding-left: 0.8em;
+}
+
+@media (max-width: 600px) {
+    .overlay {
+        padding: 1rem 1.6rem;
+    }
+
+    .logotype {
+        font-size: clamp(0.68rem, 1.8vw, 0.78rem);
+        letter-spacing: 0.72em;
+    }
+}
+
+.overlay.is-active {
+    box-shadow:
+        0 80px 180px rgba(0, 0, 0, 0.65),
+        inset 0 1px 0 rgba(255, 255, 255, 0.22),
+        inset 0 -18px 36px rgba(8, 12, 26, 0.82);
 }
 
 @media (prefers-reduced-motion: reduce) {
     .webgl {
         display: none;
-    }
-
-    body {
-        background: var(--bg);
     }
 }

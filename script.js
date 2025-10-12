@@ -1,143 +1,253 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js';
+import { RoomEnvironment } from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/environments/RoomEnvironment.js';
 
 const container = document.querySelector('.webgl');
 if (!container) {
     throw new Error('Missing .webgl container');
 }
 
+const overlay = document.querySelector('.overlay');
+
 const scene = new THREE.Scene();
 
-const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 12);
-camera.position.set(0, 0, 3.1);
+const camera = new THREE.PerspectiveCamera(44, window.innerWidth / window.innerHeight, 0.1, 30);
+camera.position.set(0, 0.24, 3.6);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setClearColor(0xfafafa, 1);
+renderer.setClearColor(0x010103, 1);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.25;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.physicallyCorrectLights = true;
 container.appendChild(renderer.domElement);
+
+const pmrem = new THREE.PMREMGenerator(renderer);
+const environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+scene.environment = environment;
 
 const root = new THREE.Group();
 scene.add(root);
 
-const haloGroup = new THREE.Group();
-root.add(haloGroup);
+const ambient = new THREE.AmbientLight(0x88a8ff, 0.32);
+scene.add(ambient);
 
-// 540 segments chosen for optimal visual quality and smoothness of the halo effect,
-// while maintaining good rendering performance on most devices.
-const strutSegments = 540;
-const strutPositions = new Float32Array(strutSegments * 6);
-const strutGeometry = new THREE.BufferGeometry();
-strutGeometry.setAttribute('position', new THREE.BufferAttribute(strutPositions, 3));
+const spot = new THREE.SpotLight(0xffa4ff, 12, 10, Math.PI / 5, 0.6, 1);
+spot.position.set(2.4, 3.8, 3.6);
+spot.target.position.set(0, -0.1, 0);
+scene.add(spot);
+scene.add(spot.target);
 
-const strutMaterial = new THREE.LineBasicMaterial({
-    color: 0x050505,
+const rim = new THREE.DirectionalLight(0x82eaff, 3.2);
+rim.position.set(-2.6, 1.5, -2.8);
+scene.add(rim);
+
+const petals = new THREE.Group();
+root.add(petals);
+
+const petalGeometry = new THREE.PlaneGeometry(0.6, 1.6, 40, 40);
+const petalPositions = petalGeometry.attributes.position;
+for (let i = 0; i < petalPositions.count; i++) {
+    const x = petalPositions.getX(i);
+    const y = petalPositions.getY(i);
+    const normalizedY = (y + 0.8) / 1.6;
+    const flare = Math.sin(normalizedY * Math.PI) ** 0.85;
+    const taper = 0.32 + flare * 0.88;
+    const fold = Math.sin((normalizedY + 0.12) * Math.PI * 0.9) * 0.36;
+    const rimCurl = Math.pow(Math.abs(x), 1.8) * 0.22;
+
+    petalPositions.setX(i, x * taper);
+    petalPositions.setY(i, (y + 0.18) * 0.92);
+    petalPositions.setZ(i, fold - rimCurl);
+}
+petalGeometry.computeVertexNormals();
+
+const petalMaterial = new THREE.MeshPhysicalMaterial({
+    color: new THREE.Color(0.66, 0.85, 1.0),
+    emissive: new THREE.Color(0.08, 0.04, 0.18),
+    emissiveIntensity: 0.45,
+    roughness: 0.14,
+    metalness: 0.02,
+    transmission: 1,
+    thickness: 1.28,
+    attenuationTint: new THREE.Color(0.82, 0.64, 1.0),
+    attenuationDistance: 1.1,
     transparent: true,
-    opacity: 0.88,
-    linewidth: 1
+    opacity: 1,
+    clearcoat: 1,
+    clearcoatRoughness: 0.08,
+    iridescence: 0.45,
+    iridescenceIOR: 1.32,
+    side: THREE.DoubleSide,
+    envMapIntensity: 1.5
 });
 
-const struts = new THREE.LineSegments(strutGeometry, strutMaterial);
-haloGroup.add(struts);
+const petalCount = 18;
+const petalsData = [];
+for (let i = 0; i < petalCount; i++) {
+    const angle = (i / petalCount) * Math.PI * 2;
+    const radius = 0.38 + Math.sin(angle * 3.2) * 0.012;
+    const mesh = new THREE.Mesh(petalGeometry, petalMaterial);
+    mesh.position.set(Math.cos(angle) * radius, -0.22 + Math.cos(angle * 1.6) * 0.08, Math.sin(angle) * radius);
+    mesh.rotation.x = Math.PI / 2.35;
+    mesh.rotation.y = angle;
+    mesh.rotation.z = Math.sin(angle * 1.8) * 0.32;
+    petals.add(mesh);
 
-const strutBase = Array.from({ length: strutSegments }, (_, i) => ({
-    angle: (i / strutSegments) * Math.PI * 2,
-    radius: 0.45 + Math.random() * 0.25,
-    span: 0.18 + Math.random() * 0.22,
-    noise: Math.random() * Math.PI * 2,
-    sway: 0.2 + Math.random() * 0.4
-}));
-
-const orbitLayers = [];
-const orbitCount = 5;
-const orbitSegments = 320;
-
-for (let i = 0; i < orbitCount; i++) {
-    const radius = 0.6 + i * 0.14;
-    const positions = new Float32Array(orbitSegments * 3);
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-
-    const material = new THREE.LineBasicMaterial({
-        color: 0x080808,
-        transparent: true,
-        opacity: 0.22 + i * 0.12
+    petalsData.push({
+        mesh,
+        baseRotationX: mesh.rotation.x,
+        baseRotationZ: mesh.rotation.z,
+        baseY: mesh.position.y,
+        phase: Math.random() * Math.PI * 2
     });
-
-    const line = new THREE.LineLoop(geometry, material);
-    haloGroup.add(line);
-
-    const offsets = new Float32Array(orbitSegments);
-    for (let j = 0; j < orbitSegments; j++) {
-        offsets[j] = Math.random() * Math.PI * 2;
-    }
-
-    orbitLayers.push({ line, positions, radius, offsets });
 }
 
-const filamentCount = 180;
-const filamentPositions = new Float32Array(filamentCount * 2 * 3);
-const filamentGeometry = new THREE.BufferGeometry();
-filamentGeometry.setAttribute('position', new THREE.BufferAttribute(filamentPositions, 3));
-
-const filamentMaterial = new THREE.LineBasicMaterial({
-    color: 0x040404,
-    transparent: true,
-    opacity: 0.6
+const coreMaterial = new THREE.MeshPhysicalMaterial({
+    color: new THREE.Color(0.96, 0.68, 1.0),
+    emissive: new THREE.Color(0.52, 0.12, 0.48),
+    emissiveIntensity: 1.35,
+    roughness: 0.16,
+    metalness: 0.04,
+    transmission: 1,
+    thickness: 0.72,
+    attenuationTint: new THREE.Color(1.0, 0.72, 1.0),
+    attenuationDistance: 0.46,
+    clearcoat: 1,
+    clearcoatRoughness: 0.05,
+    envMapIntensity: 1.8
 });
 
-const filaments = new THREE.LineSegments(filamentGeometry, filamentMaterial);
-haloGroup.add(filaments);
+const core = new THREE.Mesh(new THREE.SphereGeometry(0.22, 64, 64), coreMaterial);
+core.position.y = -0.08;
+root.add(core);
 
-const filamentBase = Array.from({ length: filamentCount }, () => ({
-    anchorAngle: Math.random() * Math.PI * 2,
-    anchorRadius: 0.35 + Math.random() * 0.55,
-    drift: Math.random() * Math.PI * 2,
-    length: 0.2 + Math.random() * 0.35
-}));
+const innerPulse = new THREE.Mesh(
+    new THREE.SphereGeometry(0.35, 32, 32),
+    new THREE.MeshBasicMaterial({
+        color: 0x9beaff,
+        transparent: true,
+        opacity: 0.16,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+    })
+);
+innerPulse.position.y = -0.08;
+root.add(innerPulse);
 
-// Chosen for visual balance and performance: 780 sparks provide a dense, visually appealing effect
-// without significantly impacting frame rate on most devices.
-const sparkCount = 780;
+const halo = new THREE.Mesh(
+    new THREE.TorusGeometry(0.62, 0.01, 16, 240),
+    new THREE.MeshBasicMaterial({
+        color: 0x7ff0ff,
+        transparent: true,
+        opacity: 0.28,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+    })
+);
+halo.rotation.x = Math.PI / 2;
+root.add(halo);
+
+const ribbonMaterialBase = new THREE.MeshPhysicalMaterial({
+    color: new THREE.Color(0.62, 0.92, 1.0),
+    roughness: 0.08,
+    metalness: 0,
+    transmission: 1,
+    thickness: 0.45,
+    attenuationTint: new THREE.Color(0.66, 0.88, 1.0),
+    attenuationDistance: 1.6,
+    transparent: true,
+    opacity: 0.28,
+    clearcoat: 1,
+    clearcoatRoughness: 0.06,
+    envMapIntensity: 1.4,
+    side: THREE.DoubleSide
+});
+
+const ribbons = [];
+const buildRibbon = (radius, phase, heightScale) => {
+    const points = [];
+    for (let i = 0; i <= 220; i++) {
+        const t = i / 220;
+        const angle = t * Math.PI * 2;
+        const undulation = Math.sin(angle * 3.1 + phase) * 0.05;
+        const y = Math.cos(angle * 1.7 + phase) * 0.28 * heightScale - 0.05;
+        points.push(new THREE.Vector3(
+            Math.cos(angle) * (radius + undulation),
+            y,
+            Math.sin(angle) * (radius + undulation)
+        ));
+    }
+    const curve = new THREE.CatmullRomCurve3(points, true, 'catmullrom', 0.45);
+    const geometry = new THREE.TubeGeometry(curve, 420, 0.012, 16, true);
+    const material = ribbonMaterialBase.clone();
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.position.y = -0.02;
+    root.add(mesh);
+    ribbons.push({ mesh, phase });
+};
+
+buildRibbon(0.58, 0.0, 1.0);
+buildRibbon(0.74, 1.3, 1.2);
+buildRibbon(0.94, -0.8, 0.85);
+
+const sparkCount = 1100;
 const sparkGeometry = new THREE.BufferGeometry();
 const sparkPositions = new Float32Array(sparkCount * 3);
 const sparkBase = new Float32Array(sparkCount * 3);
-
 for (let i = 0; i < sparkCount; i++) {
     const angle = Math.random() * Math.PI * 2;
-    const radius = 0.2 + Math.random() * 1.8;
-    const elevation = (Math.random() - 0.5) * 0.65;
-
-    sparkBase[i * 3] = Math.cos(angle) * radius;
-    sparkBase[i * 3 + 1] = Math.sin(angle) * radius;
-    sparkBase[i * 3 + 2] = elevation;
-
-    sparkPositions[i * 3] = sparkBase[i * 3];
-    sparkPositions[i * 3 + 1] = sparkBase[i * 3 + 1];
-    sparkPositions[i * 3 + 2] = sparkBase[i * 3 + 2];
+    const radius = 0.7 + Math.random() * 2.4;
+    const height = (Math.random() - 0.5) * 2.4;
+    sparkBase[i * 3] = angle;
+    sparkBase[i * 3 + 1] = radius;
+    sparkBase[i * 3 + 2] = height;
+    sparkPositions[i * 3] = Math.cos(angle) * radius;
+    sparkPositions[i * 3 + 1] = height;
+    sparkPositions[i * 3 + 2] = Math.sin(angle) * radius;
 }
 
 sparkGeometry.setAttribute('position', new THREE.BufferAttribute(sparkPositions, 3));
 
 const sparkMaterial = new THREE.PointsMaterial({
-    color: 0x0a0a0a,
-    size: 0.01,
+    color: 0xbaf3ff,
+    size: 0.018,
     sizeAttenuation: true,
     transparent: true,
-    opacity: 0.45
+    opacity: 0.68,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false
 });
 
 const sparks = new THREE.Points(sparkGeometry, sparkMaterial);
-haloGroup.add(sparks);
+root.add(sparks);
 
-let pointerX = 0;
-let pointerY = 0;
-
+const pointer = new THREE.Vector2(0, 0);
 const pointerTarget = new THREE.Vector2(0, 0);
+const glassPointer = new THREE.Vector2(0.5, 0.5);
+const glassTarget = new THREE.Vector2(0.5, 0.5);
 
-window.addEventListener('pointermove', (event) => {
-    const x = (event.clientX / window.innerWidth) * 2 - 1;
-    const y = (event.clientY / window.innerHeight) * 2 - 1;
-    pointerTarget.set(x, -y);
+const updatePointerTargets = (event) => {
+    const normX = event.clientX / window.innerWidth;
+    const normY = event.clientY / window.innerHeight;
+    pointerTarget.set(normX * 2 - 1, normY * 2 - 1);
+    glassTarget.set(normX, normY);
+    overlay?.classList.add('is-active');
+};
+
+window.addEventListener('pointermove', updatePointerTargets);
+
+window.addEventListener('pointerleave', () => {
+    pointerTarget.set(0, 0);
+    glassTarget.set(0.5, 0.5);
+    overlay?.classList.remove('is-active');
+});
+
+window.addEventListener('blur', () => {
+    pointerTarget.set(0, 0);
+    glassTarget.set(0.5, 0.5);
+    overlay?.classList.remove('is-active');
 });
 
 const resizeRenderer = () => {
@@ -152,129 +262,65 @@ const resizeRenderer = () => {
 window.addEventListener('resize', resizeRenderer);
 
 const clock = new THREE.Clock();
-const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-const updateStruts = (elapsed) => {
-    const positions = strutGeometry.attributes.position.array;
-    for (let i = 0; i < strutSegments; i++) {
-        const base = strutBase[i];
-        const oscillation = Math.sin(elapsed * 0.7 + base.noise) * base.sway;
-        const radius = base.radius + oscillation * 0.16;
-        const length = base.span + Math.cos(elapsed * 1.1 + base.noise * 1.9) * 0.12;
-
-        const offsetX = pointerX * 0.12;
-        const offsetY = pointerY * 0.12;
-
-        const angle = base.angle + Math.sin(elapsed * 0.35 + base.noise) * 0.18;
-        const cos = Math.cos(angle);
-        const sin = Math.sin(angle);
-
-        const innerIndex = i * 6;
-        const outerIndex = innerIndex + 3;
-
-        positions[innerIndex] = cos * radius + offsetX;
-        positions[innerIndex + 1] = sin * radius + offsetY;
-        positions[innerIndex + 2] = Math.sin(elapsed * 0.5 + base.noise) * 0.04;
-
-        positions[outerIndex] = cos * (radius + length) + offsetX;
-        positions[outerIndex + 1] = sin * (radius + length) + offsetY;
-        positions[outerIndex + 2] = Math.cos(elapsed * 0.65 + base.noise) * 0.05;
-    }
-    strutGeometry.attributes.position.needsUpdate = true;
-};
-
-const updateOrbits = (elapsed) => {
-    orbitLayers.forEach((layer, layerIndex) => {
-        const { positions, radius, offsets } = layer;
-        for (let i = 0; i < orbitSegments; i++) {
-            const baseAngle = (i / orbitSegments) * Math.PI * 2;
-            const wave = Math.sin(baseAngle * 4 + elapsed * (0.5 + layerIndex * 0.15) + offsets[i]) * 0.045;
-            const r = radius + wave + Math.sin(elapsed * 0.25 + offsets[i]) * 0.02;
-
-            const idx = i * 3;
-            positions[idx] = Math.cos(baseAngle) * r;
-            positions[idx + 1] = Math.sin(baseAngle) * r;
-            positions[idx + 2] = Math.sin(elapsed * 0.4 + baseAngle * 2 + offsets[i]) * 0.08;
-        }
-        layer.line.rotation.z = elapsed * 0.04 * (layerIndex % 2 === 0 ? 1 : -1);
-        layer.line.geometry.attributes.position.needsUpdate = true;
-    });
-};
-
-const updateFilaments = (elapsed) => {
-    const positions = filamentGeometry.attributes.position.array;
-    for (let i = 0; i < filamentCount; i++) {
-        const base = filamentBase[i];
-        const twist = Math.sin(elapsed * 0.8 + base.drift) * 0.4;
-        const anchorAngle = base.anchorAngle + twist;
-        const anchorRadius = base.anchorRadius + Math.cos(elapsed * 0.9 + base.drift) * 0.1;
-        const reach = base.length + Math.sin(elapsed * 1.3 + base.drift * 2.2) * 0.12;
-
-        const offsetX = pointerX * 0.14;
-        const offsetY = pointerY * 0.14;
-
-        const cos = Math.cos(anchorAngle);
-        const sin = Math.sin(anchorAngle);
-
-        const anchorIndex = i * 6;
-        const tipIndex = anchorIndex + 3;
-
-        positions[anchorIndex] = cos * anchorRadius + offsetX;
-        positions[anchorIndex + 1] = sin * anchorRadius + offsetY;
-        positions[anchorIndex + 2] = Math.sin(elapsed * 0.6 + base.drift) * 0.06;
-
-        positions[tipIndex] = cos * (anchorRadius + reach) + offsetX + Math.sin(elapsed * 1.6 + base.drift) * 0.05;
-        positions[tipIndex + 1] = sin * (anchorRadius + reach) + offsetY + Math.cos(elapsed * 1.4 + base.drift) * 0.05;
-        positions[tipIndex + 2] = Math.cos(elapsed * 0.7 + base.drift) * 0.08;
-    }
-    filamentGeometry.attributes.position.needsUpdate = true;
-};
-
-const updateSparks = (elapsed) => {
-    const positions = sparkGeometry.attributes.position.array;
-    for (let i = 0; i < sparkCount; i++) {
-        const idx = i * 3;
-        const baseX = sparkBase[idx];
-        const baseY = sparkBase[idx + 1];
-        const baseZ = sparkBase[idx + 2];
-
-        const radial = Math.sqrt(baseX * baseX + baseY * baseY);
-        const angle = Math.atan2(baseY, baseX);
-
-        const pulse = radial + Math.sin(elapsed * 0.45 + angle * 6.0) * 0.06;
-        const swirl = angle + Math.cos(elapsed * 0.35 + radial * 4.0) * 0.05;
-
-        positions[idx] = Math.cos(swirl) * pulse + pointerX * 0.2;
-        positions[idx + 1] = Math.sin(swirl) * pulse + pointerY * 0.2;
-        positions[idx + 2] = baseZ + Math.sin(elapsed * 0.9 + radial * 5.0) * 0.05;
-    }
-    sparkGeometry.attributes.position.needsUpdate = true;
-};
-
 const animate = () => {
     const elapsed = clock.getElapsedTime();
 
-    pointerX += (pointerTarget.x - pointerX) * 0.04;
-    pointerY += (pointerTarget.y - pointerY) * 0.04;
+    pointer.x += (pointerTarget.x - pointer.x) * 0.05;
+    pointer.y += (pointerTarget.y - pointer.y) * 0.05;
 
-    updateStruts(elapsed);
-    updateOrbits(elapsed);
-    updateFilaments(elapsed);
-    updateSparks(elapsed);
+    glassPointer.x += (glassTarget.x - glassPointer.x) * 0.08;
+    glassPointer.y += (glassTarget.y - glassPointer.y) * 0.08;
 
-    haloGroup.rotation.x += (pointerY * 0.35 - haloGroup.rotation.x) * 0.02;
-    haloGroup.rotation.y += (pointerX * 0.35 - haloGroup.rotation.y) * 0.02;
+    if (overlay) {
+        overlay.style.setProperty('--pointer-x', `${glassPointer.x * 100}%`);
+        overlay.style.setProperty('--pointer-y', `${glassPointer.y * 100}%`);
+        overlay.style.setProperty('--tilt-x', `${(glassPointer.x - 0.5) * 14}deg`);
+        overlay.style.setProperty('--tilt-y', `${(0.5 - glassPointer.y) * 10}deg`);
+    }
+
+    petalsData.forEach((data) => {
+        const { mesh, baseRotationX, baseRotationZ, baseY, phase } = data;
+        mesh.rotation.x = baseRotationX + Math.sin(elapsed * 0.9 + phase) * 0.14 + pointer.y * 0.08;
+        mesh.rotation.z = baseRotationZ + Math.sin(elapsed * 1.18 + phase * 1.4) * 0.2;
+        mesh.position.y = baseY + Math.sin(elapsed * 0.8 + phase) * 0.05;
+    });
+
+    const coreScale = 1 + Math.sin(elapsed * 1.6) * 0.06;
+    core.scale.setScalar(coreScale);
+    innerPulse.scale.setScalar(1.08 + Math.sin(elapsed * 1.1) * 0.14);
+    innerPulse.material.opacity = 0.16 + Math.sin(elapsed * 1.2) * 0.06;
+
+    ribbons.forEach(({ mesh, phase }, index) => {
+        mesh.rotation.y = elapsed * 0.18 + phase;
+        mesh.material.opacity = 0.22 + Math.sin(elapsed * 0.9 + phase + index * 0.4) * 0.08;
+    });
+
+    const positions = sparkGeometry.attributes.position.array;
+    for (let i = 0; i < sparkCount; i++) {
+        const baseAngle = sparkBase[i * 3];
+        const baseRadius = sparkBase[i * 3 + 1];
+        const baseHeight = sparkBase[i * 3 + 2];
+        const angle = baseAngle + elapsed * 0.2 + Math.sin(elapsed * 0.6 + baseHeight * 1.4) * 0.04;
+        const radius = baseRadius + Math.sin(elapsed * 0.8 + baseAngle * 3.0) * 0.05;
+        const height = baseHeight + Math.sin(elapsed * 0.9 + baseAngle * 1.8) * 0.08;
+        positions[i * 3] = Math.cos(angle) * radius;
+        positions[i * 3 + 1] = height;
+        positions[i * 3 + 2] = Math.sin(angle) * radius;
+    }
+    sparkGeometry.attributes.position.needsUpdate = true;
+
+    halo.rotation.z = elapsed * 0.28;
+    halo.material.opacity = 0.24 + Math.sin(elapsed * 0.7) * 0.08;
+
+    root.rotation.y = elapsed * 0.12 + pointer.x * 0.28;
+    root.rotation.x = -0.12 + pointer.y * 0.18;
+
+    camera.position.x = pointer.x * 0.24;
+    camera.position.y = 0.24 + pointer.y * 0.12;
+    camera.lookAt(0, -0.1, 0);
 
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
 };
 
-updateStruts(0);
-updateOrbits(0);
-updateFilaments(0);
-updateSparks(0);
-renderer.render(scene, camera);
-
-if (!prefersReducedMotion) {
-    animate();
-}
+animate();

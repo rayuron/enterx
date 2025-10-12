@@ -1,5 +1,4 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js';
-import { RoomEnvironment } from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/environments/RoomEnvironment.js';
 
 const container = document.querySelector('.webgl');
 if (!container) {
@@ -10,229 +9,46 @@ const overlay = document.querySelector('.overlay');
 
 const scene = new THREE.Scene();
 
-const camera = new THREE.PerspectiveCamera(44, window.innerWidth / window.innerHeight, 0.1, 30);
-camera.position.set(0, 0.24, 3.6);
+const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
+camera.position.set(0, 0, 5);
+scene.add(camera);
 
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: false, powerPreference: 'high-performance' });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setClearColor(0x010103, 1);
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.25;
+renderer.setClearColor(0xffffff, 1);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.physicallyCorrectLights = true;
 container.appendChild(renderer.domElement);
-
-const pmrem = new THREE.PMREMGenerator(renderer);
-const environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-scene.environment = environment;
 
 const root = new THREE.Group();
 scene.add(root);
 
-const ambient = new THREE.AmbientLight(0x88a8ff, 0.32);
-scene.add(ambient);
+const orchidGroup = new THREE.Group();
+root.add(orchidGroup);
 
-const spot = new THREE.SpotLight(0xffa4ff, 12, 10, Math.PI / 5, 0.6, 1);
-spot.position.set(2.4, 3.8, 3.6);
-spot.target.position.set(0, -0.1, 0);
-scene.add(spot);
-scene.add(spot.target);
-
-const rim = new THREE.DirectionalLight(0x82eaff, 3.2);
-rim.position.set(-2.6, 1.5, -2.8);
-scene.add(rim);
-
-const petals = new THREE.Group();
-root.add(petals);
-
-const petalGeometry = new THREE.PlaneGeometry(0.6, 1.6, 40, 40);
-const petalPositions = petalGeometry.attributes.position;
-for (let i = 0; i < petalPositions.count; i++) {
-    const x = petalPositions.getX(i);
-    const y = petalPositions.getY(i);
-    const normalizedY = (y + 0.8) / 1.6;
-    const flare = Math.sin(normalizedY * Math.PI) ** 0.85;
-    const taper = 0.32 + flare * 0.88;
-    const fold = Math.sin((normalizedY + 0.12) * Math.PI * 0.9) * 0.36;
-    const rimCurl = Math.pow(Math.abs(x), 1.8) * 0.22;
-
-    petalPositions.setX(i, x * taper);
-    petalPositions.setY(i, (y + 0.18) * 0.92);
-    petalPositions.setZ(i, fold - rimCurl);
-}
-petalGeometry.computeVertexNormals();
-
-const petalMaterial = new THREE.MeshPhysicalMaterial({
-    color: new THREE.Color(0.66, 0.85, 1.0),
-    emissive: new THREE.Color(0.08, 0.04, 0.18),
-    emissiveIntensity: 0.45,
-    roughness: 0.14,
-    metalness: 0.02,
-    transmission: 1,
-    thickness: 1.28,
-    attenuationTint: new THREE.Color(0.82, 0.64, 1.0),
-    attenuationDistance: 1.1,
+const orchidTexture = createOrchidTexture();
+const orchidMaterial = new THREE.MeshBasicMaterial({
+    map: orchidTexture,
     transparent: true,
-    opacity: 1,
-    clearcoat: 1,
-    clearcoatRoughness: 0.08,
-    iridescence: 0.45,
-    iridescenceIOR: 1.32,
-    side: THREE.DoubleSide,
-    envMapIntensity: 1.5
+    color: 0x000000
 });
 
-const petalCount = 18;
-const petalsData = [];
-for (let i = 0; i < petalCount; i++) {
-    const angle = (i / petalCount) * Math.PI * 2;
-    const radius = 0.38 + Math.sin(angle * 3.2) * 0.012;
-    const mesh = new THREE.Mesh(petalGeometry, petalMaterial);
-    mesh.position.set(Math.cos(angle) * radius, -0.22 + Math.cos(angle * 1.6) * 0.08, Math.sin(angle) * radius);
-    mesh.rotation.x = Math.PI / 2.35;
-    mesh.rotation.y = angle;
-    mesh.rotation.z = Math.sin(angle * 1.8) * 0.32;
-    petals.add(mesh);
+const orchidPlane = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 3.2), orchidMaterial);
+orchidGroup.add(orchidPlane);
 
-    petalsData.push({
-        mesh,
-        baseRotationX: mesh.rotation.x,
-        baseRotationZ: mesh.rotation.z,
-        baseY: mesh.position.y,
-        phase: Math.random() * Math.PI * 2
-    });
-}
-
-const coreMaterial = new THREE.MeshPhysicalMaterial({
-    color: new THREE.Color(0.96, 0.68, 1.0),
-    emissive: new THREE.Color(0.52, 0.12, 0.48),
-    emissiveIntensity: 1.35,
-    roughness: 0.16,
-    metalness: 0.04,
-    transmission: 1,
-    thickness: 0.72,
-    attenuationTint: new THREE.Color(1.0, 0.72, 1.0),
-    attenuationDistance: 0.46,
-    clearcoat: 1,
-    clearcoatRoughness: 0.05,
-    envMapIntensity: 1.8
-});
-
-const core = new THREE.Mesh(new THREE.SphereGeometry(0.22, 64, 64), coreMaterial);
-core.position.y = -0.08;
-root.add(core);
-
-const innerPulse = new THREE.Mesh(
-    new THREE.SphereGeometry(0.35, 32, 32),
-    new THREE.MeshBasicMaterial({
-        color: 0x9beaff,
-        transparent: true,
-        opacity: 0.16,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false
-    })
-);
-innerPulse.position.y = -0.08;
-root.add(innerPulse);
-
-const halo = new THREE.Mesh(
-    new THREE.TorusGeometry(0.62, 0.01, 16, 240),
-    new THREE.MeshBasicMaterial({
-        color: 0x7ff0ff,
-        transparent: true,
-        opacity: 0.28,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false
-    })
-);
-halo.rotation.x = Math.PI / 2;
-root.add(halo);
-
-const ribbonMaterialBase = new THREE.MeshPhysicalMaterial({
-    color: new THREE.Color(0.62, 0.92, 1.0),
-    roughness: 0.08,
-    metalness: 0,
-    transmission: 1,
-    thickness: 0.45,
-    attenuationTint: new THREE.Color(0.66, 0.88, 1.0),
-    attenuationDistance: 1.6,
-    transparent: true,
-    opacity: 0.28,
-    clearcoat: 1,
-    clearcoatRoughness: 0.06,
-    envMapIntensity: 1.4,
-    side: THREE.DoubleSide
-});
-
-const ribbons = [];
-const buildRibbon = (radius, phase, heightScale) => {
-    const points = [];
-    for (let i = 0; i <= 220; i++) {
-        const t = i / 220;
-        const angle = t * Math.PI * 2;
-        const undulation = Math.sin(angle * 3.1 + phase) * 0.05;
-        const y = Math.cos(angle * 1.7 + phase) * 0.28 * heightScale - 0.05;
-        points.push(new THREE.Vector3(
-            Math.cos(angle) * (radius + undulation),
-            y,
-            Math.sin(angle) * (radius + undulation)
-        ));
-    }
-    const curve = new THREE.CatmullRomCurve3(points, true, 'catmullrom', 0.45);
-    const geometry = new THREE.TubeGeometry(curve, 420, 0.012, 16, true);
-    const material = ribbonMaterialBase.clone();
-    const mesh = new THREE.Mesh(geometry, material);
-    mesh.position.y = -0.02;
-    root.add(mesh);
-    ribbons.push({ mesh, phase });
-};
-
-buildRibbon(0.58, 0.0, 1.0);
-buildRibbon(0.74, 1.3, 1.2);
-buildRibbon(0.94, -0.8, 0.85);
-
-const sparkCount = 1100;
-const sparkGeometry = new THREE.BufferGeometry();
-const sparkPositions = new Float32Array(sparkCount * 3);
-const sparkBase = new Float32Array(sparkCount * 3);
-for (let i = 0; i < sparkCount; i++) {
-    const angle = Math.random() * Math.PI * 2;
-    const radius = 0.7 + Math.random() * 2.4;
-    const height = (Math.random() - 0.5) * 2.4;
-    sparkBase[i * 3] = angle;
-    sparkBase[i * 3 + 1] = radius;
-    sparkBase[i * 3 + 2] = height;
-    sparkPositions[i * 3] = Math.cos(angle) * radius;
-    sparkPositions[i * 3 + 1] = height;
-    sparkPositions[i * 3 + 2] = Math.sin(angle) * radius;
-}
-
-sparkGeometry.setAttribute('position', new THREE.BufferAttribute(sparkPositions, 3));
-
-const sparkMaterial = new THREE.PointsMaterial({
-    color: 0xbaf3ff,
-    size: 0.018,
-    sizeAttenuation: true,
-    transparent: true,
-    opacity: 0.68,
-    blending: THREE.AdditiveBlending,
-    depthWrite: false
-});
-
-const sparks = new THREE.Points(sparkGeometry, sparkMaterial);
-root.add(sparks);
+const hudGroup = createHudLayer();
+root.add(hudGroup);
 
 const pointer = new THREE.Vector2(0, 0);
 const pointerTarget = new THREE.Vector2(0, 0);
-const glassPointer = new THREE.Vector2(0.5, 0.5);
-const glassTarget = new THREE.Vector2(0.5, 0.5);
+const overlayPointer = new THREE.Vector2(0.5, 0.5);
+const overlayTarget = new THREE.Vector2(0.5, 0.5);
 
 const updatePointerTargets = (event) => {
     const normX = event.clientX / window.innerWidth;
     const normY = event.clientY / window.innerHeight;
     pointerTarget.set(normX * 2 - 1, normY * 2 - 1);
-    glassTarget.set(normX, normY);
+    overlayTarget.set(normX, normY);
     overlay?.classList.add('is-active');
 };
 
@@ -240,87 +56,265 @@ window.addEventListener('pointermove', updatePointerTargets);
 
 window.addEventListener('pointerleave', () => {
     pointerTarget.set(0, 0);
-    glassTarget.set(0.5, 0.5);
+    overlayTarget.set(0.5, 0.5);
     overlay?.classList.remove('is-active');
 });
 
 window.addEventListener('blur', () => {
     pointerTarget.set(0, 0);
-    glassTarget.set(0.5, 0.5);
+    overlayTarget.set(0.5, 0.5);
     overlay?.classList.remove('is-active');
 });
 
 const resizeRenderer = () => {
     const width = window.innerWidth;
     const height = window.innerHeight;
-    camera.aspect = width / height;
+    const aspect = width / height;
+
+    camera.left = -aspect;
+    camera.right = aspect;
+    camera.top = 1;
+    camera.bottom = -1;
     camera.updateProjectionMatrix();
+
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 };
 
 window.addEventListener('resize', resizeRenderer);
+resizeRenderer();
 
 const clock = new THREE.Clock();
+
 const animate = () => {
     const elapsed = clock.getElapsedTime();
 
-    pointer.x += (pointerTarget.x - pointer.x) * 0.05;
-    pointer.y += (pointerTarget.y - pointer.y) * 0.05;
+    pointer.x += (pointerTarget.x - pointer.x) * 0.08;
+    pointer.y += (pointerTarget.y - pointer.y) * 0.08;
 
-    glassPointer.x += (glassTarget.x - glassPointer.x) * 0.08;
-    glassPointer.y += (glassTarget.y - glassPointer.y) * 0.08;
+    overlayPointer.x += (overlayTarget.x - overlayPointer.x) * 0.1;
+    overlayPointer.y += (overlayTarget.y - overlayPointer.y) * 0.1;
 
     if (overlay) {
-        overlay.style.setProperty('--pointer-x', `${glassPointer.x * 100}%`);
-        overlay.style.setProperty('--pointer-y', `${glassPointer.y * 100}%`);
-        overlay.style.setProperty('--tilt-x', `${(glassPointer.x - 0.5) * 14}deg`);
-        overlay.style.setProperty('--tilt-y', `${(0.5 - glassPointer.y) * 10}deg`);
+        overlay.style.setProperty('--pointer-x', `${overlayPointer.x * 100}%`);
+        overlay.style.setProperty('--pointer-y', `${overlayPointer.y * 100}%`);
+        overlay.style.setProperty('--tilt-x', `${(overlayPointer.x - 0.5) * 10}deg`);
+        overlay.style.setProperty('--tilt-y', `${(0.5 - overlayPointer.y) * 8}deg`);
     }
 
-    petalsData.forEach((data) => {
-        const { mesh, baseRotationX, baseRotationZ, baseY, phase } = data;
-        mesh.rotation.x = baseRotationX + Math.sin(elapsed * 0.9 + phase) * 0.14 + pointer.y * 0.08;
-        mesh.rotation.z = baseRotationZ + Math.sin(elapsed * 1.18 + phase * 1.4) * 0.2;
-        mesh.position.y = baseY + Math.sin(elapsed * 0.8 + phase) * 0.05;
-    });
+    const parallaxX = pointer.x * 0.12;
+    const parallaxY = pointer.y * 0.12;
 
-    const coreScale = 1 + Math.sin(elapsed * 1.6) * 0.06;
-    core.scale.setScalar(coreScale);
-    innerPulse.scale.setScalar(1.08 + Math.sin(elapsed * 1.1) * 0.14);
-    innerPulse.material.opacity = 0.16 + Math.sin(elapsed * 1.2) * 0.06;
+    root.rotation.x = parallaxY * 0.6 + Math.sin(elapsed * 0.6) * 0.02;
+    root.rotation.y = -parallaxX * 0.6 + Math.cos(elapsed * 0.4) * 0.02;
+    root.rotation.z = Math.sin(elapsed * 0.2) * 0.04;
+    root.position.x = parallaxX * 0.4;
+    root.position.y = -parallaxY * 0.4;
 
-    ribbons.forEach(({ mesh, phase }, index) => {
-        mesh.rotation.y = elapsed * 0.18 + phase;
-        mesh.material.opacity = 0.22 + Math.sin(elapsed * 0.9 + phase + index * 0.4) * 0.08;
-    });
+    hudGroup.rotation.z = Math.sin(elapsed * 0.35) * 0.06;
+    hudGroup.position.z = Math.sin(elapsed * 0.6) * 0.08;
 
-    const positions = sparkGeometry.attributes.position.array;
-    for (let i = 0; i < sparkCount; i++) {
-        const baseAngle = sparkBase[i * 3];
-        const baseRadius = sparkBase[i * 3 + 1];
-        const baseHeight = sparkBase[i * 3 + 2];
-        const angle = baseAngle + elapsed * 0.2 + Math.sin(elapsed * 0.6 + baseHeight * 1.4) * 0.04;
-        const radius = baseRadius + Math.sin(elapsed * 0.8 + baseAngle * 3.0) * 0.05;
-        const height = baseHeight + Math.sin(elapsed * 0.9 + baseAngle * 1.8) * 0.08;
-        positions[i * 3] = Math.cos(angle) * radius;
-        positions[i * 3 + 1] = height;
-        positions[i * 3 + 2] = Math.sin(angle) * radius;
-    }
-    sparkGeometry.attributes.position.needsUpdate = true;
-
-    halo.rotation.z = elapsed * 0.28;
-    halo.material.opacity = 0.24 + Math.sin(elapsed * 0.7) * 0.08;
-
-    root.rotation.y = elapsed * 0.12 + pointer.x * 0.28;
-    root.rotation.x = -0.12 + pointer.y * 0.18;
-
-    camera.position.x = pointer.x * 0.24;
-    camera.position.y = 0.24 + pointer.y * 0.12;
-    camera.lookAt(0, -0.1, 0);
+    orchidGroup.scale.setScalar(1 + Math.sin(elapsed * 0.5) * 0.02);
 
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
 };
 
 animate();
+
+function createOrchidTexture() {
+    const size = 96;
+    const data = new Uint8ClampedArray(size * size * 4);
+    const center = (size - 1) / 2;
+    const scale = 28;
+
+    const petals = [
+        { angle: 0, width: 0.58, inner: 0.28, outer: 1.6, weight: 1.05, yStretch: 1.1 },
+        { angle: Math.PI, width: 0.58, inner: 0.28, outer: 1.6, weight: 1.05, yStretch: 1.1 },
+        { angle: Math.PI / 2, width: 0.74, inner: 0.22, outer: 1.9, weight: 1.28, yStretch: 1.4 },
+        { angle: -Math.PI / 2, width: 0.64, inner: 0.26, outer: 1.45, weight: 1.02, yStretch: 1.05 },
+        { angle: Math.PI / 2, width: 0.38, inner: 0.05, outer: 1.05, weight: 0.62, yStretch: 0.9 }
+    ];
+
+    const angleDiff = (a, b) => {
+        let diff = a - b;
+        while (diff > Math.PI) diff -= Math.PI * 2;
+        while (diff < -Math.PI) diff += Math.PI * 2;
+        return Math.abs(diff);
+    };
+
+    for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+            const dx = (x - center) / scale;
+            const dy = (center - y) / scale;
+
+            let intensity = 0;
+            let stretchDy = dy;
+            let stretchR = 0;
+            let stretchAngle = 0;
+
+            petals.forEach((petal) => {
+                stretchDy = dy * petal.yStretch;
+                stretchR = Math.sqrt(dx * dx + stretchDy * stretchDy);
+                stretchAngle = Math.atan2(stretchDy, dx);
+                const diff = angleDiff(stretchAngle, petal.angle);
+                if (diff < petal.width) {
+                    const radial = (stretchR - petal.inner) / (petal.outer - petal.inner);
+                    if (radial >= 0 && radial <= 1) {
+                        const radialFalloff = Math.pow(1 - radial, 1.4);
+                        const angularFalloff = Math.pow(1 - diff / petal.width, 2.1);
+                        intensity += radialFalloff * angularFalloff * petal.weight;
+                    }
+                }
+            });
+
+            const column = Math.exp(-(dx * dx * 42 + (dy + 0.1) * (dy + 0.1) * 26));
+            intensity += column * 1.4;
+
+            const lip = Math.exp(-(dx * dx * 18 + (dy + 0.68) * (dy + 0.68) * 36));
+            intensity += lip * 0.9;
+
+            const halo = Math.exp(-(dx * dx * 10 + dy * dy * 18));
+            intensity += halo * 0.3;
+
+            const verticalVein = Math.exp(-Math.abs(dx) * 42) * Math.max(0, 1 - Math.abs(dy) * 1.2);
+            intensity += verticalVein * 0.3;
+
+            const diagVein1 = Math.exp(-Math.abs(dx * 0.9 + (dy - 0.15) * 1.4) * 18) * Math.max(0, 1 - Math.abs(dy - 0.1) * 1.4);
+            const diagVein2 = Math.exp(-Math.abs(dx * 0.9 - (dy - 0.15) * 1.4) * 18) * Math.max(0, 1 - Math.abs(dy - 0.1) * 1.4);
+            intensity += (diagVein1 + diagVein2) * 0.22;
+
+            const throat = Math.exp(-(dx * dx * 34 + (dy - 0.28) * (dy - 0.28) * 20));
+            intensity += throat * 0.4;
+
+            const notch = Math.exp(-(dx * dx * 60 + (dy + 0.48) * (dy + 0.48) * 48));
+            intensity -= notch * 0.25;
+
+            const highlight = Math.exp(-(dx * dx * 44 + (dy - 0.02) * (dy - 0.02) * 28));
+            intensity -= highlight * 0.18;
+
+            const ring = Math.abs(Math.sqrt(dx * dx + dy * dy) - 1.05);
+            if (ring < 0.12) {
+                intensity += (0.12 - ring) * 1.6;
+            }
+
+            let normalized = intensity / 2.4;
+            normalized = Math.max(0, Math.min(1.2, normalized));
+            normalized = Math.pow(normalized, 1.1);
+
+            const quantized = Math.round(normalized * 6) / 6;
+            let alpha = quantized;
+
+            const cellular = (x + y) % 2 === 0 ? 0.02 : -0.02;
+            alpha = Math.max(0, Math.min(1, alpha + cellular));
+
+            const index = ((size - 1 - y) * size + x) * 4;
+            data[index] = 0;
+            data[index + 1] = 0;
+            data[index + 2] = 0;
+            data[index + 3] = Math.round(alpha * 255);
+        }
+    }
+
+    const texture = new THREE.DataTexture(data, size, size, THREE.RGBAFormat);
+    texture.needsUpdate = true;
+    texture.magFilter = THREE.NearestFilter;
+    texture.minFilter = THREE.NearestFilter;
+    texture.flipY = false;
+    return texture;
+}
+
+function createHudLayer() {
+    const hud = new THREE.Group();
+
+    const ringSegments = 120;
+    const ringPositions = [];
+    for (let i = 0; i <= ringSegments; i++) {
+        const angle = (i / ringSegments) * Math.PI * 2;
+        const radius = 2.15 + Math.sin(angle * 4) * 0.04;
+        ringPositions.push(Math.cos(angle) * radius, Math.sin(angle) * radius, 0);
+    }
+    const ringGeometry = new THREE.BufferGeometry();
+    ringGeometry.setAttribute('position', new THREE.Float32BufferAttribute(ringPositions, 3));
+    const ringMaterial = new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.18 });
+    hud.add(new THREE.LineLoop(ringGeometry, ringMaterial));
+
+    const radialPositions = [];
+    const radialCount = 8;
+    for (let i = 0; i < radialCount; i++) {
+        const angle = (i / radialCount) * Math.PI * 2;
+        const inner = 0.4;
+        const outer = 2.4;
+        radialPositions.push(Math.cos(angle) * inner, Math.sin(angle) * inner, 0);
+        radialPositions.push(Math.cos(angle) * outer, Math.sin(angle) * outer, 0);
+    }
+    const radialGeometry = new THREE.BufferGeometry();
+    radialGeometry.setAttribute('position', new THREE.Float32BufferAttribute(radialPositions, 3));
+    const radialMaterial = new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.12 });
+    hud.add(new THREE.LineSegments(radialGeometry, radialMaterial));
+
+    const gridPositions = [];
+    const gridExtent = 1.8;
+    for (let i = -3; i <= 3; i++) {
+        const offset = (i / 3) * gridExtent;
+        gridPositions.push(-gridExtent, offset, 0, gridExtent, offset, 0);
+        gridPositions.push(offset, -gridExtent, 0, offset, gridExtent, 0);
+    }
+    const gridGeometry = new THREE.BufferGeometry();
+    gridGeometry.setAttribute('position', new THREE.Float32BufferAttribute(gridPositions, 3));
+    const gridMaterial = new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.05 });
+    hud.add(new THREE.LineSegments(gridGeometry, gridMaterial));
+
+    const labelTexture = createLabelTexture('ORCHID BIO-SCAN\\nVEIN MAPPING ACTIVE');
+    const labelMaterial = new THREE.MeshBasicMaterial({ map: labelTexture, transparent: true, color: 0x000000 });
+    const labelPlane = new THREE.Mesh(new THREE.PlaneGeometry(2.8, 0.42), labelMaterial);
+    labelPlane.position.set(0, -2.6, 0);
+    hud.add(labelPlane);
+
+    const microTexture = createLabelTexture('x-ray refraction  ▲  holographic depth  ▲  specimen jnwd3at ojac56a spc1tb2');
+    const microMaterial = new THREE.MeshBasicMaterial({ map: microTexture, transparent: true, color: 0x000000 });
+    const microPlane = new THREE.Mesh(new THREE.PlaneGeometry(3.4, 0.28), microMaterial);
+    microPlane.position.set(0, 2.5, 0);
+    hud.add(microPlane);
+
+    const tickerTexture = createLabelTexture('00.48  microns // spectral vein glow // lumen status nominal', 256, 32, 9);
+    const tickerMaterial = new THREE.MeshBasicMaterial({ map: tickerTexture, transparent: true, color: 0x000000 });
+    const tickerPlane = new THREE.Mesh(new THREE.PlaneGeometry(3.8, 0.24), tickerMaterial);
+    tickerPlane.position.set(-2.8, 0, 0);
+    tickerPlane.rotation.z = Math.PI / 2;
+    hud.add(tickerPlane);
+
+    return hud;
+}
+
+function createLabelTexture(text, width = 384, height = 96, fontSize = 14) {
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+        throw new Error('Unable to acquire 2D context for label texture');
+    }
+
+    ctx.fillStyle = 'rgba(0,0,0,0)';
+    ctx.fillRect(0, 0, width, height);
+    ctx.fillStyle = '#000';
+    ctx.font = `600 ${fontSize}px "IBM Plex Mono", "Roboto Mono", monospace`;
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'center';
+    ctx.imageSmoothingEnabled = false;
+
+    const lines = text.split('\\n');
+    const spacing = height / (lines.length + 1);
+    lines.forEach((line, index) => {
+        ctx.fillText(line.toUpperCase(), width / 2, spacing * (index + 1));
+    });
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.needsUpdate = true;
+    texture.magFilter = THREE.NearestFilter;
+    texture.minFilter = THREE.NearestFilter;
+    texture.anisotropy = 1;
+    texture.flipY = false;
+    return texture;
+}

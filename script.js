@@ -36,8 +36,17 @@ const initBirdSketch = () => {
         };
 
         p.draw = () => {
-            p.background(0, 0, 9, 255);
+            p.background(210, 30, 250, 255);
             p.strokeWeight(0.7);
+
+            const applyBlueStroke = (y, s, alpha = 110) => {
+                const baseHue = 208;
+                const hueOffset = p.sin(t * 0.8 + y * 0.3 + s * p.TWO_PI) * 10
+                    + p.cos(t * 0.6 + y * 0.18) * 8;
+                const hue = (baseHue + hueOffset + 360) % 360;
+                const saturation = p.constrain(90 + p.sin(t * 0.9 + s * p.PI) * 25 + p.cos(y * 0.24 + t * 0.5) * 18, 40, 150);
+                p.stroke(hue, saturation, 255, alpha);
+            };
 
             const w1 = p.sin(t * 2.2) * 0.75;
             const w2 = p.cos(t * 3.1) * 0.55;
@@ -100,9 +109,7 @@ const initBirdSketch = () => {
                             + p.sin(w3 * 0.5 + y * 0.12) * 0.12
                             + p.cos(w5 + s * p.PI) * 0.08);
 
-                    const h = (y * 6 + s * 140 + t * 20) % 360;
-                    const sat = h > 270 && h < 330 ? 30 : 230;
-                    p.stroke(h, sat, 255, 110);
+                    applyBlueStroke(y, s);
                     p.line(x1, y1, x2, y2);
                 }
             }
@@ -156,9 +163,7 @@ const initBirdSketch = () => {
                             + p.sin(-w3 * 0.5 + y * 0.12) * 0.12
                             + p.cos(-w5 + s * p.PI) * 0.08);
 
-                    const h = (y * 6 + s * 140 + t * 20) % 360;
-                    const sat = h > 270 && h < 330 ? 30 : 230;
-                    p.stroke(h, sat, 255, 110);
+                    applyBlueStroke(y, s);
                     p.line(x1, y1, x2, y2);
                 }
             }
@@ -201,9 +206,7 @@ const initBirdSketch = () => {
                             + p.cos(w4 + s * p.PI) * 0.09
                             + p.sin(w5 + y * 0.12) * 0.06);
 
-                    const h = (y * 7 + s * 160 + t * 25 + 200) % 360;
-                    const sat = h > 270 && h < 330 ? 30 : 230;
-                    p.stroke(h, sat, 255, 95);
+                    applyBlueStroke(y, s, 100);
                     p.line(x1, y1, x2, y2);
                 }
             }

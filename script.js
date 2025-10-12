@@ -92,6 +92,8 @@ const filamentBase = Array.from({ length: filamentCount }, () => ({
     length: 0.2 + Math.random() * 0.35
 }));
 
+// Chosen for visual balance and performance: 780 sparks provide a dense, visually appealing effect
+// without significantly impacting frame rate on most devices.
 const sparkCount = 780;
 const sparkGeometry = new THREE.BufferGeometry();
 const sparkPositions = new Float32Array(sparkCount * 3);

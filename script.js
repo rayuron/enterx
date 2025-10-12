@@ -220,11 +220,33 @@ const initBirdSketch = () => {
     birdSketchInstance = new window.p5(sketch);
 };
 
-if (document.readyState === 'complete' || document.readyState === 'interactive') {
+const readyPromise = new Promise((resolve) => {
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        resolve();
+        return;
+    }
+
+    document.addEventListener('DOMContentLoaded', resolve, { once: true });
+});
+
+const p5Script = document.querySelector('script[src*="p5"]');
+const p5LoadedPromise = new Promise((resolve) => {
+    if (typeof window !== 'undefined' && window.p5) {
+        resolve();
+        return;
+    }
+
+    if (!p5Script) {
+        resolve();
+        return;
+    }
+
+    p5Script.addEventListener('load', resolve, { once: true });
+});
+
+Promise.all([readyPromise, p5LoadedPromise]).then(() => {
     initBirdSketch();
-} else {
-    document.addEventListener('DOMContentLoaded', initBirdSketch);
-}
+});
 
 const pointer = { x: 0.5, y: 0.5 };
 const pointerTarget = { x: 0.5, y: 0.5 };

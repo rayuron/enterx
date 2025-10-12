@@ -9,8 +9,15 @@ let birdSketchInstance = null;
 
 const initBirdSketch = () => {
     if (birdSketchInstance || typeof window === 'undefined' || !window.p5) {
+        console.log('initBirdSketch skipped:', {
+            hasInstance: !!birdSketchInstance,
+            isWindow: typeof window !== 'undefined',
+            hasP5: !!window.p5
+        });
         return;
     }
+
+    console.log('Initializing bird sketch with p5.js');
 
     const sketch = (p) => {
         let t = 0;
@@ -18,16 +25,32 @@ const initBirdSketch = () => {
         let canvas;
 
         p.setup = () => {
-            canvas = p.createCanvas(window.innerWidth, window.innerHeight);
-            canvas.parent(container);
-            p.pixelDensity(Math.min(window.devicePixelRatio || 1, 2));
-            canvas.elt.classList.add('bird-canvas');
-            canvas.elt.setAttribute('aria-hidden', 'true');
-            canvas.elt.style.pointerEvents = 'none';
-            p.noFill();
-            p.strokeJoin(p.ROUND);
-            p.strokeCap(p.ROUND);
-            p.colorMode(p.HSB, 360, 255, 255, 255);
+            try {
+                // Explicitly use P2D renderer for better mobile compatibility
+                canvas = p.createCanvas(window.innerWidth, window.innerHeight, p.P2D);
+                canvas.parent(container);
+
+                // Reduce pixel density for mobile performance
+                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                p.pixelDensity(isMobile ? 1 : Math.min(window.devicePixelRatio || 1, 2));
+
+                canvas.elt.classList.add('bird-canvas');
+                canvas.elt.setAttribute('aria-hidden', 'true');
+                canvas.elt.style.pointerEvents = 'none';
+                p.noFill();
+                p.strokeJoin(p.ROUND);
+                p.strokeCap(p.ROUND);
+                p.colorMode(p.HSB, 360, 255, 255, 255);
+                console.log('Canvas created successfully:', {
+                    width: canvas.width,
+                    height: canvas.height,
+                    pixelDensity: p.pixelDensity(),
+                    isMobile: isMobile,
+                    userAgent: navigator.userAgent
+                });
+            } catch (error) {
+                console.error('Failed to create canvas:', error);
+            }
         };
 
         p.windowResized = () => {
@@ -216,7 +239,12 @@ const initBirdSketch = () => {
         };
     };
 
-    birdSketchInstance = new window.p5(sketch);
+    try {
+        birdSketchInstance = new window.p5(sketch);
+        console.log('p5 instance created successfully');
+    } catch (error) {
+        console.error('Failed to create p5 instance:', error);
+    }
 };
 
 const readyPromise = new Promise((resolve) => {
@@ -228,23 +256,37 @@ const readyPromise = new Promise((resolve) => {
     document.addEventListener('DOMContentLoaded', resolve, { once: true });
 });
 
-const p5Script = document.querySelector('script[src*="p5"]');
 const p5LoadedPromise = new Promise((resolve) => {
     if (typeof window !== 'undefined' && window.p5) {
         resolve();
         return;
     }
 
-    if (!p5Script) {
-        resolve();
-        return;
+    const checkP5 = () => {
+        if (window.p5) {
+            resolve();
+            return;
+        }
+        setTimeout(checkP5, 50);
+    };
+
+    const p5Script = document.querySelector('script[src*="p5"]');
+    if (p5Script) {
+        p5Script.addEventListener('load', resolve, { once: true });
+        p5Script.addEventListener('error', () => {
+            console.error('Failed to load p5.js');
+            resolve();
+        }, { once: true });
     }
 
-    p5Script.addEventListener('load', resolve, { once: true });
+    checkP5();
 });
 
 Promise.all([readyPromise, p5LoadedPromise]).then(() => {
+    console.log('Document and p5 ready, initializing sketch...');
     initBirdSketch();
+}).catch((error) => {
+    console.error('Error during initialization:', error);
 });
 
 const pointer = { x: 0.5, y: 0.5 };

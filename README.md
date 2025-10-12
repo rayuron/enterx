@@ -15,7 +15,14 @@ Three.js を使ったモノクロームのヒーローセクションです。�
 
 ## デプロイ
 
-GitHub Pages に公開する場合は、`main` ブランチにコミットして Pages を有効化するだけで動作します。追加のビルド手順は不要です。
+このリポジトリには GitHub Pages へ自動デプロイする GitHub Actions ワークフロー（`.github/workflows/deploy.yml`）が含まれています。公開する手順は次の通りです。
+
+1. リポジトリの `Settings` → `Pages` に移動します。
+2. **Build and deployment** の Source を **GitHub Actions** に設定します。
+3. 以降、`main` ブランチへコミットまたはマージするとワークフローが実行され、静的ファイルが自動的に Pages へ配信されます。必要に応じて `Run workflow` から手動実行も可能です。
+4. 初回デプロイが完了すると、同じ設定ページに公開 URL が表示されます。カスタムドメインを利用する場合は `Custom domain` 欄に設定してください。
+
+追加のビルド手順や依存パッケージは不要です。`index.html`、`styles.css`、`script.js` がそのまま公開されます。
 
 ## ライセンス
 

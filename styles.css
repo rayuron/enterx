@@ -62,7 +62,6 @@ body {
     text-transform: uppercase;
     color: transparent;
     -webkit-text-stroke: 1px var(--ink);
-    text-stroke: 1px var(--ink);
     text-rendering: optimizeLegibility;
 }
 

@@ -37,6 +37,15 @@ body {
     width: 100% !important;
     height: 100% !important;
     display: block;
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.webgl canvas.bird-canvas {
+    z-index: -1;
+    mix-blend-mode: multiply;
+    filter: contrast(0.92) saturate(0.84);
 }
 
 .overlay {

@@ -21,6 +21,8 @@ scene.add(root);
 const haloGroup = new THREE.Group();
 root.add(haloGroup);
 
+// 540 segments chosen for optimal visual quality and smoothness of the halo effect,
+// while maintaining good rendering performance on most devices.
 const strutSegments = 540;
 const strutPositions = new Float32Array(strutSegments * 6);
 const strutGeometry = new THREE.BufferGeometry();

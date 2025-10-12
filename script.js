@@ -23,19 +23,6 @@ container.appendChild(renderer.domElement);
 const root = new THREE.Group();
 scene.add(root);
 
-const orchidGroup = new THREE.Group();
-root.add(orchidGroup);
-
-const orchidTexture = createOrchidTexture();
-const orchidMaterial = new THREE.MeshBasicMaterial({
-    map: orchidTexture,
-    transparent: true,
-    color: 0x000000
-});
-
-const orchidPlane = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 3.2), orchidMaterial);
-orchidGroup.add(orchidPlane);
-
 const hudGroup = createHudLayer();
 root.add(hudGroup);
 
@@ -114,115 +101,11 @@ const animate = () => {
     hudGroup.rotation.z = Math.sin(elapsed * 0.35) * 0.06;
     hudGroup.position.z = Math.sin(elapsed * 0.6) * 0.08;
 
-    orchidGroup.scale.setScalar(1 + Math.sin(elapsed * 0.5) * 0.02);
-
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
 };
 
 animate();
-
-function createOrchidTexture() {
-    const size = 96;
-    const data = new Uint8ClampedArray(size * size * 4);
-    const center = (size - 1) / 2;
-    const scale = 28;
-
-    const petals = [
-        { angle: 0, width: 0.58, inner: 0.28, outer: 1.6, weight: 1.05, yStretch: 1.1 },
-        { angle: Math.PI, width: 0.58, inner: 0.28, outer: 1.6, weight: 1.05, yStretch: 1.1 },
-        { angle: Math.PI / 2, width: 0.74, inner: 0.22, outer: 1.9, weight: 1.28, yStretch: 1.4 },
-        { angle: -Math.PI / 2, width: 0.64, inner: 0.26, outer: 1.45, weight: 1.02, yStretch: 1.05 },
-        { angle: Math.PI / 2, width: 0.38, inner: 0.05, outer: 1.05, weight: 0.62, yStretch: 0.9 }
-    ];
-
-    const angleDiff = (a, b) => {
-        let diff = a - b;
-        while (diff > Math.PI) diff -= Math.PI * 2;
-        while (diff < -Math.PI) diff += Math.PI * 2;
-        return Math.abs(diff);
-    };
-
-    for (let y = 0; y < size; y++) {
-        for (let x = 0; x < size; x++) {
-            const dx = (x - center) / scale;
-            const dy = (center - y) / scale;
-
-            let intensity = 0;
-            let stretchDy = dy;
-            let stretchR = 0;
-            let stretchAngle = 0;
-
-            petals.forEach((petal) => {
-                stretchDy = dy * petal.yStretch;
-                stretchR = Math.sqrt(dx * dx + stretchDy * stretchDy);
-                stretchAngle = Math.atan2(stretchDy, dx);
-                const diff = angleDiff(stretchAngle, petal.angle);
-                if (diff < petal.width) {
-                    const radial = (stretchR - petal.inner) / (petal.outer - petal.inner);
-                    if (radial >= 0 && radial <= 1) {
-                        const radialFalloff = Math.pow(1 - radial, 1.4);
-                        const angularFalloff = Math.pow(1 - diff / petal.width, 2.1);
-                        intensity += radialFalloff * angularFalloff * petal.weight;
-                    }
-                }
-            });
-
-            const column = Math.exp(-(dx * dx * 42 + (dy + 0.1) * (dy + 0.1) * 26));
-            intensity += column * 1.4;
-
-            const lip = Math.exp(-(dx * dx * 18 + (dy + 0.68) * (dy + 0.68) * 36));
-            intensity += lip * 0.9;
-
-            const halo = Math.exp(-(dx * dx * 10 + dy * dy * 18));
-            intensity += halo * 0.3;
-
-            const verticalVein = Math.exp(-Math.abs(dx) * 42) * Math.max(0, 1 - Math.abs(dy) * 1.2);
-            intensity += verticalVein * 0.3;
-
-            const diagVein1 = Math.exp(-Math.abs(dx * 0.9 + (dy - 0.15) * 1.4) * 18) * Math.max(0, 1 - Math.abs(dy - 0.1) * 1.4);
-            const diagVein2 = Math.exp(-Math.abs(dx * 0.9 - (dy - 0.15) * 1.4) * 18) * Math.max(0, 1 - Math.abs(dy - 0.1) * 1.4);
-            intensity += (diagVein1 + diagVein2) * 0.22;
-
-            const throat = Math.exp(-(dx * dx * 34 + (dy - 0.28) * (dy - 0.28) * 20));
-            intensity += throat * 0.4;
-
-            const notch = Math.exp(-(dx * dx * 60 + (dy + 0.48) * (dy + 0.48) * 48));
-            intensity -= notch * 0.25;
-
-            const highlight = Math.exp(-(dx * dx * 44 + (dy - 0.02) * (dy - 0.02) * 28));
-            intensity -= highlight * 0.18;
-
-            const ring = Math.abs(Math.sqrt(dx * dx + dy * dy) - 1.05);
-            if (ring < 0.12) {
-                intensity += (0.12 - ring) * 1.6;
-            }
-
-            let normalized = intensity / 2.4;
-            normalized = Math.max(0, Math.min(1.2, normalized));
-            normalized = Math.pow(normalized, 1.1);
-
-            const quantized = Math.round(normalized * 6) / 6;
-            let alpha = quantized;
-
-            const cellular = (x + y) % 2 === 0 ? 0.02 : -0.02;
-            alpha = Math.max(0, Math.min(1, alpha + cellular));
-
-            const index = ((size - 1 - y) * size + x) * 4;
-            data[index] = 0;
-            data[index + 1] = 0;
-            data[index + 2] = 0;
-            data[index + 3] = Math.round(alpha * 255);
-        }
-    }
-
-    const texture = new THREE.DataTexture(data, size, size, THREE.RGBAFormat);
-    texture.needsUpdate = true;
-    texture.magFilter = THREE.NearestFilter;
-    texture.minFilter = THREE.NearestFilter;
-    texture.flipY = false;
-    return texture;
-}
 
 function createHudLayer() {
     const hud = new THREE.Group();

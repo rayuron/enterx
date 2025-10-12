@@ -1,53 +1,22 @@
 # EnterX
 
-Welcome to EnterX - a modern, responsive homepage designed to showcase your brand and services.
+Three.js を使ったモノクロームのヒーローセクションです。中央に「EnterX」のみを配し、周囲を多層のライン、フィラメント、微細な粒子で包み込みます。黒はすべて線情報として描画され、白い余白に対して繊細で感動的なコントラストを生み出します。
 
-## Features
+## プレビュー
 
-- **Responsive Design**: Fully responsive layout that works on all devices
-- **Modern UI**: Clean, professional design with smooth animations
-- **Interactive Elements**: Smooth scrolling navigation and animated components
-- **Contact Form**: Functional contact form with validation
-- **Fast Loading**: Optimized CSS and JavaScript for quick page loads
+`index.html` をブラウザで開くとそのまま鑑賞できます。モバイルでも余白を生かした表示になり、ポインタ操作でフィードバックが加わります。
 
-## Structure
+## カスタマイズ
 
-- `index.html` - Main homepage with semantic HTML structure
-- `styles.css` - Comprehensive CSS styling with animations and responsive design
-- `script.js` - JavaScript for interactivity and form handling
+- **タイポグラフィ**: 文字は `index.html` 内の `<h1>` を編集します。輪郭線の太さやサイズは `styles.css` の `.wordmark` セクションで調整できます。
+- **ビジュアル**: 背景のグラデーションやグローは `styles.css` で制御しています。
+- **動き**: ラインや粒子の密度、スピード、応答性は `script.js` の定数（`strutSegments`、`orbitCount`、`sparkCount` など）を調整してください。
+- **パフォーマンス**: `prefers-reduced-motion` を検知してアニメーションを停止するため、モーションが不要な環境にも対応しています。
 
-## Getting Started
+## デプロイ
 
-1. Clone this repository
-2. Open `index.html` in your web browser
-3. Customize the content, colors, and branding to match your needs
+GitHub Pages に公開する場合は、`main` ブランチにコミットして Pages を有効化するだけで動作します。追加のビルド手順は不要です。
 
-## Customization
+## ライセンス
 
-### Colors
-The main colors used in the design can be easily customized in `styles.css`:
-- Primary: `#2c3e50` (Dark blue-gray)
-- Secondary: `#3498db` (Blue)
-- Gradient: `#667eea` to `#764ba2`
-
-### Content
-Update the text content in `index.html` to match your brand and services.
-
-### Sections
-The homepage includes the following sections:
-- Hero/Landing section
-- About section
-- Services section
-- Contact section
-
-## Browser Support
-
-This homepage is compatible with all modern browsers including:
-- Chrome
-- Firefox
-- Safari
-- Edge
-
-## License
-
-This project is open source and available under the MIT License.
+MIT

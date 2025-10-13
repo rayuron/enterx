@@ -1,15 +1,4 @@
-:root {
-    color-scheme: light;
-    --bg-start: #f3f7ff;
-    --bg-end: #c9dfff;
-    --ink: rgba(14, 32, 60, 0.82);
-    --glass-stroke: rgba(255, 255, 255, 0.45);
-    --glass-highlight: rgba(255, 255, 255, 0.65);
-    --glass-flare: rgba(40, 85, 165, 0.12);
-    font-family: "Inter", "Noto Sans JP", "IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    font-feature-settings: "tnum" on, "ss01" on;
-}
-
+/* Minimal CSS for debugging mobile canvas issue */
 * {
     margin: 0;
     padding: 0;
@@ -17,143 +6,11 @@
 }
 
 html, body {
+    width: 100%;
+    height: 100%;
     overflow: hidden;
 }
 
 body {
-    min-height: 100vh;
-    min-height: 100svh;
-    background: radial-gradient(circle at 25% 20%, rgba(255, 255, 255, 0.7), transparent 60%),
-        radial-gradient(circle at 75% 80%, rgba(173, 202, 255, 0.55), transparent 55%),
-        linear-gradient(165deg, var(--bg-start), var(--bg-end));
-    color: var(--ink);
-    display: grid;
-    place-items: center;
-    overflow: hidden;
-    position: relative;
-    perspective: 1200px;
-}
-
-.webgl {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-}
-
-.webgl canvas {
-    width: 100% !important;
-    height: 100% !important;
-    display: block;
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-}
-
-.webgl canvas.bird-canvas {
-    z-index: 0;
-    /* Disable filter on mobile - it can break canvas rendering on iOS Safari */
-}
-
-@media (min-width: 768px) {
-    .webgl canvas.bird-canvas {
-        filter: contrast(1.08) saturate(1.1);
-    }
-}
-
-.overlay {
-    --pointer-x: 50%;
-    --pointer-y: 50%;
-    --tilt-x: 0deg;
-    --tilt-y: 0deg;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: clamp(1rem, 2vw + 0.8rem, 1.6rem) clamp(1.6rem, 3vw + 1.4rem, 3.2rem);
-    width: min(82vw, 540px);
-    min-width: clamp(240px, 52vw, 420px);
-    border-radius: 999px;
-    background: linear-gradient(160deg, rgba(255, 255, 255, 0.24), rgba(213, 229, 255, 0.16));
-    backdrop-filter: blur(24px) saturate(160%);
-    border: 1px solid rgba(255, 255, 255, 0.42);
-    box-shadow:
-        0 40px 120px rgba(60, 110, 180, 0.15),
-        inset 0 1px 0 rgba(255, 255, 255, 0.58),
-        inset 0 -16px 28px rgba(58, 93, 160, 0.1);
-    transform: rotateX(var(--tilt-y, 0deg)) rotateY(var(--tilt-x, 0deg));
-    transform-style: preserve-3d;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    z-index: 1;
-}
-
-.overlay::before,
-.overlay::after {
-    content: "";
-    position: absolute;
-    inset: 8px;
-    border-radius: 999px;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
-}
-
-.overlay::before {
-    background: radial-gradient(circle at calc(var(--pointer-x, 50%) + 4%) calc(var(--pointer-y, 50%) - 10%), rgba(255, 255, 255, 0.68), transparent 62%);
-    mix-blend-mode: screen;
-    opacity: 0.5;
-}
-
-.overlay::after {
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    box-shadow:
-        inset 0 0 18px rgba(40, 85, 165, 0.12),
-        inset 0 0 2px rgba(255, 255, 255, 0.32);
-}
-
-.logotype {
-    font-size: clamp(0.7rem, 1.6vw, 0.95rem);
-    font-weight: 400;
-    letter-spacing: clamp(0.62em, 0.4vw + 0.6em, 0.8em);
-    text-transform: uppercase;
-    color: rgba(0, 33, 85, 0.78);
-    text-align: center;
-    text-rendering: geometricPrecision;
-    padding-left: 0.8em;
-}
-
-@media (max-width: 600px) {
-    .overlay {
-        width: min(88vw, 360px);
-        padding: clamp(0.85rem, 2vw + 0.6rem, 1.2rem) clamp(1.2rem, 6vw, 2rem);
-        border-radius: 36px;
-        backdrop-filter: blur(20px) saturate(150%);
-    }
-
-    .logotype {
-        font-size: clamp(0.64rem, 2.6vw, 0.76rem);
-        letter-spacing: clamp(0.48em, 0.9vw + 0.45em, 0.64em);
-    }
-}
-
-@media (max-width: 420px) {
-    body {
-        padding: 2.4rem 0;
-    }
-
-    .overlay {
-        width: min(92vw, 320px);
-    }
-}
-
-.overlay.is-active {
-    box-shadow:
-        0 70px 140px rgba(52, 93, 160, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.6),
-        inset 0 -18px 32px rgba(58, 93, 160, 0.14);
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .webgl {
-        display: none;
-    }
+    background: #000;
 }

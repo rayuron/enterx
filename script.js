@@ -44,20 +44,22 @@ const initBirdSketch = () => {
                 let canvasHeight = window.innerHeight;
 
                 if (isMobile) {
-                    // Use even smaller size for iOS Safari - 720p
-                    const maxWidth = 720;
-                    const maxHeight = 720;
+                    // iOS Safari hard limit: 16,777,216 pixels (width × height)
+                    const maxPixels = 16777216;
+                    const pixelCount = canvasWidth * canvasHeight;
 
-                    if (canvasWidth > maxWidth) {
-                        canvasHeight = Math.floor(canvasHeight * (maxWidth / canvasWidth));
-                        canvasWidth = maxWidth;
-                    }
-                    if (canvasHeight > maxHeight) {
-                        canvasWidth = Math.floor(canvasWidth * (maxHeight / canvasHeight));
-                        canvasHeight = maxHeight;
+                    if (pixelCount > maxPixels) {
+                        const scale = Math.sqrt(maxPixels / pixelCount);
+                        canvasWidth = Math.floor(canvasWidth * scale);
+                        canvasHeight = Math.floor(canvasHeight * scale);
+                        debugLog('Scaled down to fit 16.7M pixel limit: ' + canvasWidth + 'x' + canvasHeight);
                     }
 
-                    debugLog('Reduced canvas size to: ' + canvasWidth + 'x' + canvasHeight);
+                    // Additional safety: cap at 2048 per dimension
+                    canvasWidth = Math.min(canvasWidth, 2048);
+                    canvasHeight = Math.min(canvasHeight, 2048);
+
+                    debugLog('Final canvas size: ' + canvasWidth + 'x' + canvasHeight + ' = ' + (canvasWidth * canvasHeight) + ' pixels');
                 }
 
                 // Explicitly use P2D renderer for better mobile compatibility
@@ -70,13 +72,10 @@ const initBirdSketch = () => {
                 canvas.elt.style.pointerEvents = 'none';
 
                 // Style canvas to fill screen (CSS size is independent of canvas resolution)
-                canvas.elt.style.position = 'fixed';
-                canvas.elt.style.top = '0';
-                canvas.elt.style.left = '0';
-                canvas.elt.style.width = '100vw';
-                canvas.elt.style.height = '100vh';
-                canvas.elt.style.display = 'block';
-                canvas.elt.style.objectFit = 'cover';
+                canvas.elt.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;display:block;margin:0;padding:0;';
+
+                // Use p5.js canvas.style() method as recommended
+                canvas.style('display', 'block');
 
                 p.noFill();
                 p.strokeJoin(p.ROUND);

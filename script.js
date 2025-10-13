@@ -47,11 +47,22 @@ const initBirdSketch = () => {
                 canvas.elt.classList.add('bird-canvas');
                 canvas.elt.setAttribute('aria-hidden', 'true');
                 canvas.elt.style.pointerEvents = 'none';
+
+                // Force visibility for debugging
+                canvas.elt.style.position = 'fixed';
+                canvas.elt.style.top = '0';
+                canvas.elt.style.left = '0';
+                canvas.elt.style.width = '100%';
+                canvas.elt.style.height = '100%';
+                canvas.elt.style.zIndex = '10000';
+                canvas.elt.style.display = 'block';
+
                 p.noFill();
                 p.strokeJoin(p.ROUND);
                 p.strokeCap(p.ROUND);
                 p.colorMode(p.HSB, 360, 255, 255, 255);
                 debugLog('Canvas created: ' + canvas.width + 'x' + canvas.height + ' mobile:' + isMobile);
+                debugLog('Canvas element: ' + canvas.elt.tagName);
             } catch (error) {
                 debugLog('Canvas error: ' + error.message);
             }
@@ -61,7 +72,13 @@ const initBirdSketch = () => {
             p.resizeCanvas(window.innerWidth, window.innerHeight);
         };
 
+        let drawCount = 0;
         p.draw = () => {
+            drawCount++;
+            if (drawCount === 1) {
+                debugLog('draw() called');
+            }
+
             p.background(210, 30, 250, 255);
 
             // Debug: Draw a simple test shape

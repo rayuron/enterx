@@ -1,9 +1,53 @@
+// Setup body styling via JavaScript
+document.body.style.cssText = `
+    background: radial-gradient(circle at 25% 20%, rgba(255, 255, 255, 0.7), transparent 60%),
+        radial-gradient(circle at 75% 80%, rgba(173, 202, 255, 0.55), transparent 55%),
+        linear-gradient(165deg, #f3f7ff, #c9dfff);
+    display: grid;
+    place-items: center;
+    position: relative;
+    font-family: "Inter", "Noto Sans JP", "IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+`;
+
 const container = document.querySelector('.webgl');
 if (!container) {
     throw new Error('Missing .webgl container');
 }
 
+// Style container
+container.style.cssText = 'position:fixed;inset:0;z-index:0;pointer-events:none;';
+
 const overlay = document.querySelector('.overlay');
+if (overlay) {
+    overlay.style.cssText = `
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.2rem 2rem;
+        min-width: 240px;
+        width: min(82vw, 540px);
+        border-radius: 999px;
+        background: linear-gradient(160deg, rgba(255, 255, 255, 0.24), rgba(213, 229, 255, 0.16));
+        backdrop-filter: blur(24px) saturate(160%);
+        border: 1px solid rgba(255, 255, 255, 0.42);
+        box-shadow: 0 40px 120px rgba(60, 110, 180, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.58), inset 0 -16px 28px rgba(58, 93, 160, 0.1);
+        z-index: 1;
+    `;
+}
+
+const logotype = document.querySelector('.logotype');
+if (logotype) {
+    logotype.style.cssText = `
+        font-size: 0.8rem;
+        font-weight: 400;
+        letter-spacing: 0.7em;
+        text-transform: uppercase;
+        color: rgba(0, 33, 85, 0.78);
+        text-align: center;
+        padding-left: 0.8em;
+    `;
+}
 
 let birdSketchInstance = null;
 
@@ -44,16 +88,20 @@ const initBirdSketch = () => {
 
                 // Explicitly use P2D renderer for better mobile compatibility
                 canvas = p.createCanvas(canvasWidth, canvasHeight, p.P2D);
-                canvas.parent(container);
                 p.pixelDensity(1); // Always use 1 to avoid memory issues
 
-                canvas.elt.classList.add('bird-canvas');
-                canvas.elt.setAttribute('aria-hidden', 'true');
-                canvas.elt.style.pointerEvents = 'none';
+                // Append directly to body instead of container
+                document.body.appendChild(canvas.elt);
 
-                // Style canvas to fill screen
-                canvas.elt.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;display:block;';
-                canvas.style('display', 'block');
+                // Style canvas - simple and direct
+                canvas.elt.style.position = 'fixed';
+                canvas.elt.style.top = '0';
+                canvas.elt.style.left = '0';
+                canvas.elt.style.width = '100vw';
+                canvas.elt.style.height = '100vh';
+                canvas.elt.style.display = 'block';
+                canvas.elt.style.zIndex = '0';
+                canvas.elt.style.pointerEvents = 'none';
 
                 p.noFill();
                 p.strokeJoin(p.ROUND);

@@ -90,7 +90,7 @@ body {
 .overlay::before {
     background: radial-gradient(circle at calc(var(--pointer-x, 50%) + 4%) calc(var(--pointer-y, 50%) - 10%), rgba(255, 255, 255, 0.68), transparent 62%);
     mix-blend-mode: screen;
-    opacity: 0.82;
+    opacity: 0.5;
 }
 
 .overlay::after {

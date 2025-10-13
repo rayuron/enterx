@@ -7,17 +7,27 @@ const overlay = document.querySelector('.overlay');
 
 let birdSketchInstance = null;
 
+// Debug display for mobile
+const debugDiv = document.createElement('div');
+debugDiv.style.cssText = 'position:fixed;top:0;left:0;background:rgba(0,0,0,0.8);color:#0f0;padding:10px;font-size:10px;z-index:9999;max-width:100vw;overflow:auto;';
+document.body.appendChild(debugDiv);
+
+const debugLog = (msg) => {
+    console.log(msg);
+    debugDiv.innerHTML += (typeof msg === 'object' ? JSON.stringify(msg, null, 2) : msg) + '<br>';
+};
+
 const initBirdSketch = () => {
     if (birdSketchInstance || typeof window === 'undefined' || !window.p5) {
-        console.log('initBirdSketch skipped:', {
+        debugLog('initBirdSketch skipped: ' + JSON.stringify({
             hasInstance: !!birdSketchInstance,
             isWindow: typeof window !== 'undefined',
             hasP5: !!window.p5
-        });
+        }));
         return;
     }
 
-    console.log('Initializing bird sketch with p5.js');
+    debugLog('Initializing bird sketch with p5.js');
 
     const sketch = (p) => {
         let t = 0;
@@ -41,15 +51,9 @@ const initBirdSketch = () => {
                 p.strokeJoin(p.ROUND);
                 p.strokeCap(p.ROUND);
                 p.colorMode(p.HSB, 360, 255, 255, 255);
-                console.log('Canvas created successfully:', {
-                    width: canvas.width,
-                    height: canvas.height,
-                    pixelDensity: p.pixelDensity(),
-                    isMobile: isMobile,
-                    userAgent: navigator.userAgent
-                });
+                debugLog('Canvas created: ' + canvas.width + 'x' + canvas.height + ' mobile:' + isMobile);
             } catch (error) {
-                console.error('Failed to create canvas:', error);
+                debugLog('Canvas error: ' + error.message);
             }
         };
 
@@ -241,9 +245,9 @@ const initBirdSketch = () => {
 
     try {
         birdSketchInstance = new window.p5(sketch);
-        console.log('p5 instance created successfully');
+        debugLog('p5 instance created');
     } catch (error) {
-        console.error('Failed to create p5 instance:', error);
+        debugLog('p5 instance error: ' + error.message);
     }
 };
 
@@ -256,14 +260,18 @@ const readyPromise = new Promise((resolve) => {
     document.addEventListener('DOMContentLoaded', resolve, { once: true });
 });
 
+debugLog('Script loaded');
+
 const p5LoadedPromise = new Promise((resolve) => {
     if (typeof window !== 'undefined' && window.p5) {
+        debugLog('p5 already loaded');
         resolve();
         return;
     }
 
     const checkP5 = () => {
         if (window.p5) {
+            debugLog('p5 detected');
             resolve();
             return;
         }
@@ -272,21 +280,27 @@ const p5LoadedPromise = new Promise((resolve) => {
 
     const p5Script = document.querySelector('script[src*="p5"]');
     if (p5Script) {
-        p5Script.addEventListener('load', resolve, { once: true });
-        p5Script.addEventListener('error', () => {
-            console.error('Failed to load p5.js');
+        debugLog('p5 script found');
+        p5Script.addEventListener('load', () => {
+            debugLog('p5 loaded via event');
             resolve();
         }, { once: true });
+        p5Script.addEventListener('error', () => {
+            debugLog('p5 load error');
+            resolve();
+        }, { once: true });
+    } else {
+        debugLog('p5 script not found');
     }
 
     checkP5();
 });
 
 Promise.all([readyPromise, p5LoadedPromise]).then(() => {
-    console.log('Document and p5 ready, initializing sketch...');
+    debugLog('Ready to init');
     initBirdSketch();
 }).catch((error) => {
-    console.error('Error during initialization:', error);
+    debugLog('Init error: ' + error.message);
 });
 
 const pointer = { x: 0.5, y: 0.5 };

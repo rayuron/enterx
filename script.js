@@ -1,8 +1,8 @@
 // Setup body styling via JavaScript
 document.body.style.cssText = `
-    background: radial-gradient(circle at 25% 20%, rgba(255, 255, 255, 0.7), transparent 60%),
-        radial-gradient(circle at 75% 80%, rgba(173, 202, 255, 0.55), transparent 55%),
-        linear-gradient(165deg, #f3f7ff, #c9dfff);
+    background: radial-gradient(circle at 25% 20%, rgba(255, 255, 255, 0.78), transparent 60%),
+        radial-gradient(circle at 75% 80%, rgba(188, 215, 255, 0.6), transparent 55%),
+        linear-gradient(165deg, #f5f8ff, #dce7ff 52%, #ffe9f3);
     display: grid;
     place-items: center;
     position: relative;
@@ -28,15 +28,15 @@ if (overlay) {
         min-width: 240px;
         width: min(82vw, 560px);
         border-radius: 999px;
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(230, 242, 255, 0.08));
-        backdrop-filter: blur(32px) saturate(170%);
-        border: 0.5px solid rgba(255, 255, 255, 0.35);
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.16), rgba(226, 238, 255, 0.08));
+        backdrop-filter: blur(34px) saturate(180%);
+        border: 0.5px solid rgba(255, 255, 255, 0.28);
         box-shadow:
-            0 8px 32px rgba(60, 110, 180, 0.08),
-            0 2px 8px rgba(60, 110, 180, 0.06),
-            inset 0 1px 0 rgba(255, 255, 255, 0.55),
-            inset 0 -1px 0 rgba(255, 255, 255, 0.22),
-            inset 0 0 60px rgba(255, 255, 255, 0.03);
+            0 8px 32px rgba(47, 90, 180, 0.08),
+            0 2px 8px rgba(47, 90, 180, 0.05),
+            inset 0 1px 0 rgba(255, 255, 255, 0.45),
+            inset 0 -1px 0 rgba(255, 255, 255, 0.18),
+            inset 0 0 60px rgba(255, 255, 255, 0.02);
         z-index: 1;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     `;
@@ -45,22 +45,22 @@ if (overlay) {
     overlay.addEventListener('pointerenter', () => {
         overlay.style.transform = 'scale(1.02)';
         overlay.style.boxShadow = `
-            0 12px 48px rgba(60, 110, 180, 0.12),
-            0 4px 12px rgba(60, 110, 180, 0.08),
-            inset 0 1px 0 rgba(255, 255, 255, 0.65),
-            inset 0 -1px 0 rgba(255, 255, 255, 0.28),
-            inset 0 0 80px rgba(255, 255, 255, 0.05)
+            0 12px 48px rgba(47, 90, 180, 0.12),
+            0 4px 12px rgba(47, 90, 180, 0.07),
+            inset 0 1px 0 rgba(255, 255, 255, 0.55),
+            inset 0 -1px 0 rgba(255, 255, 255, 0.24),
+            inset 0 0 80px rgba(255, 255, 255, 0.04)
         `;
     });
 
     overlay.addEventListener('pointerleave', () => {
         overlay.style.transform = 'scale(1)';
         overlay.style.boxShadow = `
-            0 8px 32px rgba(60, 110, 180, 0.08),
-            0 2px 8px rgba(60, 110, 180, 0.06),
-            inset 0 1px 0 rgba(255, 255, 255, 0.55),
-            inset 0 -1px 0 rgba(255, 255, 255, 0.22),
-            inset 0 0 60px rgba(255, 255, 255, 0.03)
+            0 8px 32px rgba(47, 90, 180, 0.08),
+            0 2px 8px rgba(47, 90, 180, 0.05),
+            inset 0 1px 0 rgba(255, 255, 255, 0.45),
+            inset 0 -1px 0 rgba(255, 255, 255, 0.18),
+            inset 0 0 60px rgba(255, 255, 255, 0.02)
         `;
     });
 }
@@ -216,6 +216,16 @@ const initBirdSketch = () => {
                 shimmer: p.sin(time * 1.5) * (0.25 + influence * 0.05),
             });
 
+            const evaluatePointerLuminance = (y, span) => {
+                const normalizedY = p.constrain(y / 45, 0, 1);
+                const pointerX = p.constrain(touchX, 0, 1);
+                const pointerY = p.constrain(touchY, 0, 1);
+                const dx = (span - pointerX) * 1.2;
+                const dy = (normalizedY - pointerY) * 1.35;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                return 1 - p.constrain(distance, 0, 1);
+            };
+
             const applyFeatherColor = (y, s, alpha = 140) => {
                 const longitudinal = p.constrain(1 - y / 45, 0, 1);
                 const span = p.constrain(s, 0, 1);
@@ -223,30 +233,39 @@ const initBirdSketch = () => {
                 const shimmer = p.sin(t * 0.6 + y * 0.18 + span * p.TWO_PI) * 5;
                 const ripple = p.cos(t * 0.45 + y * 0.12) * 3;
                 const emberPulse = p.sin(t * 0.7 + y * 0.21 + span * p.PI * 1.4) * 4;
-                const hueBase = p.constrain(202 + tipShift * 0.55 + shimmer + ripple + emberPulse, 186, 231);
+                const hueBase = p.constrain(214 + tipShift * 0.45 + shimmer + ripple + emberPulse * 0.65, 204, 234);
 
                 const saturation = p.constrain(
-                    95
-                        + longitudinal * 90
-                        + p.sin(t * 0.8 + span * p.PI) * 32
-                        + p.cos(y * 0.16 + t * 0.65) * 20,
-                    80,
-                    210,
+                    118
+                        + longitudinal * 78
+                        + p.sin(t * 0.8 + span * p.PI) * 28
+                        + p.cos(y * 0.16 + t * 0.65) * 18,
+                    100,
+                    215,
                 );
 
-                const brightness = p.constrain(
-                    208
-                        + longitudinal * 44
-                        + p.cos(t * 0.9 + span * p.TWO_PI) * 18
-                        + p.sin(y * 0.22 + t * 0.5) * 14,
-                    198,
+                const baseBrightness = p.constrain(
+                    215
+                        + longitudinal * 40
+                        + p.cos(t * 0.9 + span * p.TWO_PI) * 16
+                        + p.sin(y * 0.22 + t * 0.5) * 12,
+                    205,
                     255,
                 );
 
-                p.colorMode(p.HSB, 360, 255, 255, 255);
-                p.stroke(hueBase, saturation, brightness, alpha);
+                const pointerGlow = evaluatePointerLuminance(y, span);
+                const pointerLift = pointerGlow * touchInfluence;
+                const brightness = p.constrain(
+                    baseBrightness + pointerLift * 48 - (1 - pointerGlow) * 12,
+                    198,
+                    255,
+                );
+                const dynamicAlpha = p.constrain(alpha + pointerLift * 55, 60, 255);
 
-                return { hue: hueBase, saturation, brightness, depth: longitudinal, span };
+                p.colorMode(p.HSB, 360, 255, 255, 255);
+                p.stroke(hueBase, saturation, brightness, dynamicAlpha);
+
+                return { hue: hueBase, saturation, brightness, depth: longitudinal, span, pointerGlow };
             };
 
             const computeCrimsonAccent = (span, depth, index) => {
@@ -257,21 +276,22 @@ const initBirdSketch = () => {
                 return p.constrain(centerBias * 0.45 + depthBias * 0.35 + ridge * 0.25 + pulse * 0.2, 0, 1);
             };
 
-            const renderCrimsonAccent = (x1, y1, x2, y2, intensity) => {
+            const renderCrimsonAccent = (x1, y1, x2, y2, intensity, pointerGlow = 0) => {
                 if (intensity <= 0.08) {
                     return;
                 }
 
                 p.push();
                 p.colorMode(p.HSB, 360, 255, 255, 255);
-                const hue = p.lerp(8, 18, (p.sin(t * 1.35 + x1 * 0.01 + y1 * 0.01) + 1) * 0.5);
-                const saturation = p.constrain(170 + intensity * 70, 0, 255);
-                const brightness = p.constrain(210 + intensity * 35, 0, 255);
-                const alpha = 40 + intensity * 72;
+                const hue = p.lerp(348, 356, (p.sin(t * 1.35 + x1 * 0.01 + y1 * 0.01) + 1) * 0.5);
+                const saturation = p.constrain(165 + intensity * 60, 0, 255);
+                const pointerLift = pointerGlow * touchInfluence;
+                const brightness = p.constrain(212 + intensity * 32 + pointerLift * 28, 0, 255);
+                const alpha = p.constrain(44 + intensity * 70 + pointerLift * 46, 0, 255);
                 p.stroke(hue, saturation, brightness, alpha);
                 p.strokeWeight(0.45 + intensity * 0.65);
-                const accentBendX = (touchX - 0.5) * intensity * 5.5;
-                const accentBendY = (touchY - 0.5) * intensity * -4.2;
+                const accentBendX = (touchX - 0.5) * (intensity + pointerLift * 0.6) * 5.5;
+                const accentBendY = (touchY - 0.5) * (intensity + pointerLift * 0.6) * -4.2;
                 p.line(x1 + accentBendX, y1 + accentBendY, x2 - accentBendX * 0.4, y2 - accentBendY * 0.6);
                 p.pop();
             };
@@ -282,6 +302,8 @@ const initBirdSketch = () => {
                 // Base chroma in HSB space
                 const chroma = applyFeatherColor(yIndex, sIndex, alpha);
                 const crimsonAccent = computeCrimsonAccent(sIndex, chroma.depth, yIndex);
+                const pointerGlow = chroma.pointerGlow;
+                const pointerLift = pointerGlow * touchInfluence;
                 p.strokeWeight(0.75 + featherFactor * 0.32);
                 p.line(x1, y1, x2, y2);
 
@@ -289,16 +311,16 @@ const initBirdSketch = () => {
                 p.push();
                 p.colorMode(p.RGB, 255, 255, 255, 255);
                 const glowDepth = chroma.depth;
-                const glowAlpha = 38 + featherFactor * 30 + touchInfluence * 42 + glowDepth * 22 + crimsonAccent * 18;
-                const glowBlue = p.constrain(196 + glowDepth * 52 + featherFactor * 18, 180, 255);
-                const glowGreen = p.constrain(190 + glowDepth * 38 + p.sin(t * 1.2 + sIndex * p.TWO_PI) * 8, 170, 255);
-                const glowRed = p.constrain(150 + glowDepth * 26 + p.cos(t * 0.9 + yIndex * 0.12) * 6 + crimsonAccent * 48, 130, 230);
+                const glowAlpha = 38 + featherFactor * 30 + touchInfluence * 32 + glowDepth * 22 + crimsonAccent * 18 + pointerLift * 55;
+                const glowBlue = p.constrain(202 + glowDepth * 48 + featherFactor * 18 + pointerLift * 22, 188, 255);
+                const glowGreen = p.constrain(196 + glowDepth * 32 + p.sin(t * 1.2 + sIndex * p.TWO_PI) * 8 + pointerLift * 18, 178, 255);
+                const glowRed = p.constrain(160 + glowDepth * 24 + p.cos(t * 0.9 + yIndex * 0.12) * 6 + crimsonAccent * 52 + pointerLift * 26, 142, 236);
                 p.stroke(glowRed, glowGreen, glowBlue, glowAlpha);
                 p.strokeWeight(1.25 + featherFactor * 0.6);
                 p.line(x1, y1, x2, y2);
 
                 // Inner core accent with stroke(grayscale, alpha)
-                const coreAlpha = 26 + featherFactor * 18 + glowDepth * 16;
+                const coreAlpha = 26 + featherFactor * 18 + glowDepth * 16 + pointerLift * 36;
                 p.stroke(255, coreAlpha);
                 p.strokeWeight(0.65 + featherFactor * 0.38);
                 p.line(x1, y1, x2, y2);
@@ -306,13 +328,13 @@ const initBirdSketch = () => {
                 // Ambient shadow to add depth
                 const shadowOffsetX = (touchX - 0.5) * 6;
                 const shadowOffsetY = (touchY - 0.5) * 6;
-                const shadowAlpha = 22 + featherFactor * 14 + (1 - glowDepth) * 18;
-                p.stroke(48, 68, 120, shadowAlpha);
+                const shadowAlpha = Math.max(0, 24 + featherFactor * 16 + (1 - glowDepth) * 16 - pointerLift * 26);
+                p.stroke(36, 58, 122, shadowAlpha);
                 p.strokeWeight(1.5 + featherFactor * 0.42);
                 p.line(x1 + shadowOffsetX, y1 + shadowOffsetY, x2 + shadowOffsetX, y2 + shadowOffsetY);
                 p.pop();
 
-                renderCrimsonAccent(x1, y1, x2, y2, crimsonAccent);
+                renderCrimsonAccent(x1, y1, x2, y2, crimsonAccent, pointerGlow);
 
                 p.colorMode(p.HSB, 360, 255, 255, 255);
             };

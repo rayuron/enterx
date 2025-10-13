@@ -203,47 +203,59 @@ const initBirdSketch = () => {
             p.strokeWeight(0.7);
 
             const applyFeatherColor = (y, s, alpha = 140) => {
-                const hueBase = 205
-                    + p.sin(t * 0.7 + s * p.TWO_PI) * 6
-                    + p.cos(y * 0.14 + t * 0.5) * 4;
+                const longitudinal = p.constrain(1 - y / 45, 0, 1);
+                const span = p.constrain(s, 0, 1);
+                const tipShift = p.lerp(-18, 12, span);
+                const shimmer = p.sin(t * 0.6 + y * 0.18 + span * p.TWO_PI) * 5;
+                const ripple = p.cos(t * 0.45 + y * 0.12) * 3;
+                const hueBase = p.constrain(202 + tipShift * 0.55 + shimmer + ripple, 188, 228);
+
                 const saturation = p.constrain(
-                    70
-                        + p.sin(s * p.PI) * 35
-                        + p.cos(y * 0.18 + t * 0.8) * 28,
-                    40,
-                    140,
-                );
-                const brightness = p.constrain(
-                    228
-                        + p.sin(y * 0.2 + t * 0.9) * 22
-                        + p.cos(s * p.PI * 1.5 + t * 0.6) * 16,
+                    95
+                        + longitudinal * 90
+                        + p.sin(t * 0.8 + span * p.PI) * 32
+                        + p.cos(y * 0.16 + t * 0.65) * 20,
+                    80,
                     210,
+                );
+
+                const brightness = p.constrain(
+                    208
+                        + longitudinal * 44
+                        + p.cos(t * 0.9 + span * p.TWO_PI) * 18
+                        + p.sin(y * 0.22 + t * 0.5) * 14,
+                    198,
                     255,
                 );
+
                 p.colorMode(p.HSB, 360, 255, 255, 255);
                 p.stroke(hueBase, saturation, brightness, alpha);
+
+                return { hue: hueBase, saturation, brightness, depth: longitudinal, span };
             };
 
             const drawLayeredStroke = (x1, y1, x2, y2, yIndex, sIndex, alpha = 120) => {
                 const featherFactor = 0.65 + (1 - sIndex) * 0.45 + touchInfluence * 0.25;
 
                 // Base chroma in HSB space
-                applyFeatherColor(yIndex, sIndex, alpha);
+                const chroma = applyFeatherColor(yIndex, sIndex, alpha);
                 p.strokeWeight(0.75 + featherFactor * 0.32);
                 p.line(x1, y1, x2, y2);
 
                 // Soft luminous highlight using RGB stroke(r,g,b,alpha)
                 p.push();
                 p.colorMode(p.RGB, 255, 255, 255, 255);
-                const glowAlpha = 46 + featherFactor * 28 + touchInfluence * 44;
-                const glowBlue = 200 + featherFactor * 25;
-                const glowGreen = 220 + featherFactor * 18;
-                p.stroke(180, glowGreen, glowBlue, glowAlpha);
+                const glowDepth = chroma.depth;
+                const glowAlpha = 38 + featherFactor * 30 + touchInfluence * 42 + glowDepth * 22;
+                const glowBlue = p.constrain(196 + glowDepth * 52 + featherFactor * 18, 180, 255);
+                const glowGreen = p.constrain(190 + glowDepth * 38 + p.sin(t * 1.2 + sIndex * p.TWO_PI) * 8, 170, 255);
+                const glowRed = p.constrain(150 + glowDepth * 26 + p.cos(t * 0.9 + yIndex * 0.12) * 6, 130, 210);
+                p.stroke(glowRed, glowGreen, glowBlue, glowAlpha);
                 p.strokeWeight(1.25 + featherFactor * 0.6);
                 p.line(x1, y1, x2, y2);
 
                 // Inner core accent with stroke(grayscale, alpha)
-                const coreAlpha = 24 + featherFactor * 20;
+                const coreAlpha = 26 + featherFactor * 18 + glowDepth * 16;
                 p.stroke(255, coreAlpha);
                 p.strokeWeight(0.65 + featherFactor * 0.38);
                 p.line(x1, y1, x2, y2);
@@ -251,8 +263,8 @@ const initBirdSketch = () => {
                 // Ambient shadow to add depth
                 const shadowOffsetX = (touchX - 0.5) * 6;
                 const shadowOffsetY = (touchY - 0.5) * 6;
-                const shadowAlpha = 26 + featherFactor * 16;
-                p.stroke(80, 80, 80, shadowAlpha);
+                const shadowAlpha = 22 + featherFactor * 14 + (1 - glowDepth) * 18;
+                p.stroke(48, 68, 120, shadowAlpha);
                 p.strokeWeight(1.5 + featherFactor * 0.42);
                 p.line(x1 + shadowOffsetX, y1 + shadowOffsetY, x2 + shadowOffsetX, y2 + shadowOffsetY);
                 p.pop();

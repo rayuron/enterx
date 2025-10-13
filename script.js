@@ -68,13 +68,13 @@ if (overlay) {
 const logotype = document.querySelector('.logotype');
 if (logotype) {
     logotype.style.cssText = `
-        font-size: 1.58rem;
+        font-size: clamp(2rem, 4.5vw, 2.8rem);
         font-weight: 800;
         letter-spacing: 0.72em;
-        color: rgba(255, 255, 255, 0.96);
+        color: rgba(14, 18, 28, 0.98);
         text-align: center;
         padding-left: 0.72em;
-        text-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+        text-shadow: 0 3px 18px rgba(255, 255, 255, 0.32);
     `;
 }
 
@@ -123,7 +123,8 @@ const initBirdSketch = () => {
 
                 // Explicitly use P2D renderer for better mobile compatibility
                 canvas = p.createCanvas(canvasWidth, canvasHeight, p.P2D);
-                p.pixelDensity(1); // Always use 1 to avoid memory issues
+                const targetDensity = Math.min(window.devicePixelRatio || 1, 2.5);
+                p.pixelDensity(targetDensity);
 
                 // Append directly to body instead of container
                 document.body.appendChild(canvas.elt);
@@ -201,39 +202,50 @@ const initBirdSketch = () => {
             p.background(0, 0, 255, 255);
             p.strokeWeight(0.7);
 
-            const applyWhiteStroke = (y, s, alpha = 110) => {
+            const applyFeatherColor = (y, s, alpha = 140) => {
+                const hueBase = 205
+                    + p.sin(t * 0.7 + s * p.TWO_PI) * 6
+                    + p.cos(y * 0.14 + t * 0.5) * 4;
+                const saturation = p.constrain(
+                    70
+                        + p.sin(s * p.PI) * 35
+                        + p.cos(y * 0.18 + t * 0.8) * 28,
+                    40,
+                    140,
+                );
                 const brightness = p.constrain(
-                    225
-                        + p.sin(t * 0.9 + s * p.PI) * 18
-                        + p.cos(y * 0.24 + t * 0.5) * 14
-                        + p.sin(y * 0.18 + t * 0.7) * 10,
-                    200,
+                    228
+                        + p.sin(y * 0.2 + t * 0.9) * 22
+                        + p.cos(s * p.PI * 1.5 + t * 0.6) * 16,
+                    210,
                     255,
                 );
-                p.stroke(0, 0, brightness, alpha);
+                p.colorMode(p.HSB, 360, 255, 255, 255);
+                p.stroke(hueBase, saturation, brightness, alpha);
             };
 
-            const drawLayeredStroke = (x1, y1, x2, y2, yIndex, sIndex, alpha = 110) => {
+            const drawLayeredStroke = (x1, y1, x2, y2, yIndex, sIndex, alpha = 120) => {
                 const featherFactor = 0.65 + (1 - sIndex) * 0.45 + touchInfluence * 0.25;
 
                 // Base chroma in HSB space
-                applyWhiteStroke(yIndex, sIndex, alpha);
-                p.strokeWeight(0.7 + featherFactor * 0.25);
+                applyFeatherColor(yIndex, sIndex, alpha);
+                p.strokeWeight(0.75 + featherFactor * 0.32);
                 p.line(x1, y1, x2, y2);
 
                 // Soft luminous highlight using RGB stroke(r,g,b,alpha)
                 p.push();
                 p.colorMode(p.RGB, 255, 255, 255, 255);
-                const glowAlpha = 36 + featherFactor * 26 + touchInfluence * 40;
-                const glowIntensity = 220 + featherFactor * 20;
-                p.stroke(glowIntensity, glowIntensity, glowIntensity, glowAlpha);
-                p.strokeWeight(1.2 + featherFactor * 0.55);
+                const glowAlpha = 46 + featherFactor * 28 + touchInfluence * 44;
+                const glowBlue = 200 + featherFactor * 25;
+                const glowGreen = 220 + featherFactor * 18;
+                p.stroke(180, glowGreen, glowBlue, glowAlpha);
+                p.strokeWeight(1.25 + featherFactor * 0.6);
                 p.line(x1, y1, x2, y2);
 
                 // Inner core accent with stroke(grayscale, alpha)
-                const coreAlpha = 16 + featherFactor * 18;
+                const coreAlpha = 24 + featherFactor * 20;
                 p.stroke(255, coreAlpha);
-                p.strokeWeight(0.6 + featherFactor * 0.35);
+                p.strokeWeight(0.65 + featherFactor * 0.38);
                 p.line(x1, y1, x2, y2);
 
                 // Ambient shadow to add depth
@@ -241,9 +253,11 @@ const initBirdSketch = () => {
                 const shadowOffsetY = (touchY - 0.5) * 6;
                 const shadowAlpha = 26 + featherFactor * 16;
                 p.stroke(80, 80, 80, shadowAlpha);
-                p.strokeWeight(1.6 + featherFactor * 0.4);
+                p.strokeWeight(1.5 + featherFactor * 0.42);
                 p.line(x1 + shadowOffsetX, y1 + shadowOffsetY, x2 + shadowOffsetX, y2 + shadowOffsetY);
                 p.pop();
+
+                p.colorMode(p.HSB, 360, 255, 255, 255);
             };
 
             // Add touch influence to wave motion

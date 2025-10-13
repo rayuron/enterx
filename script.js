@@ -7,27 +7,10 @@ const overlay = document.querySelector('.overlay');
 
 let birdSketchInstance = null;
 
-// Debug display for mobile
-const debugDiv = document.createElement('div');
-debugDiv.style.cssText = 'position:fixed;top:0;left:0;background:rgba(0,0,0,0.8);color:#0f0;padding:10px;font-size:10px;z-index:9999;max-width:100vw;overflow:auto;';
-document.body.appendChild(debugDiv);
-
-const debugLog = (msg) => {
-    console.log(msg);
-    debugDiv.innerHTML += (typeof msg === 'object' ? JSON.stringify(msg, null, 2) : msg) + '<br>';
-};
-
 const initBirdSketch = () => {
     if (birdSketchInstance || typeof window === 'undefined' || !window.p5) {
-        debugLog('initBirdSketch skipped: ' + JSON.stringify({
-            hasInstance: !!birdSketchInstance,
-            isWindow: typeof window !== 'undefined',
-            hasP5: !!window.p5
-        }));
         return;
     }
-
-    debugLog('Initializing bird sketch with p5.js');
 
     const sketch = (p) => {
         let t = 0;
@@ -52,14 +35,11 @@ const initBirdSketch = () => {
                         const scale = Math.sqrt(maxPixels / pixelCount);
                         canvasWidth = Math.floor(canvasWidth * scale);
                         canvasHeight = Math.floor(canvasHeight * scale);
-                        debugLog('Scaled down to fit 16.7M pixel limit: ' + canvasWidth + 'x' + canvasHeight);
                     }
 
                     // Additional safety: cap at 2048 per dimension
                     canvasWidth = Math.min(canvasWidth, 2048);
                     canvasHeight = Math.min(canvasHeight, 2048);
-
-                    debugLog('Final canvas size: ' + canvasWidth + 'x' + canvasHeight + ' = ' + (canvasWidth * canvasHeight) + ' pixels');
                 }
 
                 // Explicitly use P2D renderer for better mobile compatibility
@@ -71,29 +51,16 @@ const initBirdSketch = () => {
                 canvas.elt.setAttribute('aria-hidden', 'true');
                 canvas.elt.style.pointerEvents = 'none';
 
-                // Style canvas to fill screen (CSS size is independent of canvas resolution)
-                canvas.elt.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;display:block;margin:0;padding:0;z-index:10000!important;';
-
-                // Use p5.js canvas.style() method as recommended
+                // Style canvas to fill screen
+                canvas.elt.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;display:block;';
                 canvas.style('display', 'block');
 
                 p.noFill();
                 p.strokeJoin(p.ROUND);
                 p.strokeCap(p.ROUND);
                 p.colorMode(p.HSB, 360, 255, 255, 255);
-                debugLog('Canvas: ' + canvas.width + 'x' + canvas.height + ' (display: ' + window.innerWidth + 'x' + window.innerHeight + ') mobile:' + isMobile);
-
-                // Check if canvas element exists in DOM
-                setTimeout(() => {
-                    const canvasInDom = document.querySelector('canvas');
-                    debugLog('Canvas in DOM: ' + (canvasInDom ? 'YES' : 'NO'));
-                    if (canvasInDom) {
-                        const styles = window.getComputedStyle(canvasInDom);
-                        debugLog('Canvas display: ' + styles.display + ', visibility: ' + styles.visibility + ', opacity: ' + styles.opacity + ', zIndex: ' + styles.zIndex);
-                    }
-                }, 100);
             } catch (error) {
-                debugLog('Canvas error: ' + error.message);
+                console.error('Canvas error:', error);
             }
         };
 
@@ -101,24 +68,8 @@ const initBirdSketch = () => {
             p.resizeCanvas(window.innerWidth, window.innerHeight);
         };
 
-        let drawCount = 0;
         p.draw = () => {
-            drawCount++;
-            if (drawCount === 1) {
-                debugLog('draw() called, frameRate: ' + Math.round(p.frameRate()));
-            }
-
-            // Use RGB instead of HSB for debugging
-            p.colorMode(p.RGB, 255, 255, 255, 255);
-            p.background(0, 255, 0);  // Bright green - very visible
-
-            // Debug: Draw a simple test shape
-            p.fill(255, 0, 0, 255);
-            p.noStroke();
-            p.circle(p.width / 2, p.height / 2, 100);
-
-            p.colorMode(p.HSB, 360, 255, 255, 255);
-            p.noFill();
+            p.background(210, 30, 250, 255);
             p.strokeWeight(0.7);
 
             const applyBlueStroke = (y, s, alpha = 110) => {
@@ -301,9 +252,8 @@ const initBirdSketch = () => {
 
     try {
         birdSketchInstance = new window.p5(sketch);
-        debugLog('p5 instance created');
     } catch (error) {
-        debugLog('p5 instance error: ' + error.message);
+        console.error('p5 instance error:', error);
     }
 };
 
@@ -316,18 +266,14 @@ const readyPromise = new Promise((resolve) => {
     document.addEventListener('DOMContentLoaded', resolve, { once: true });
 });
 
-debugLog('Script loaded');
-
 const p5LoadedPromise = new Promise((resolve) => {
     if (typeof window !== 'undefined' && window.p5) {
-        debugLog('p5 already loaded');
         resolve();
         return;
     }
 
     const checkP5 = () => {
         if (window.p5) {
-            debugLog('p5 detected');
             resolve();
             return;
         }
@@ -336,27 +282,17 @@ const p5LoadedPromise = new Promise((resolve) => {
 
     const p5Script = document.querySelector('script[src*="p5"]');
     if (p5Script) {
-        debugLog('p5 script found');
-        p5Script.addEventListener('load', () => {
-            debugLog('p5 loaded via event');
-            resolve();
-        }, { once: true });
-        p5Script.addEventListener('error', () => {
-            debugLog('p5 load error');
-            resolve();
-        }, { once: true });
-    } else {
-        debugLog('p5 script not found');
+        p5Script.addEventListener('load', resolve, { once: true });
+        p5Script.addEventListener('error', resolve, { once: true });
     }
 
     checkP5();
 });
 
 Promise.all([readyPromise, p5LoadedPromise]).then(() => {
-    debugLog('Ready to init');
     initBirdSketch();
 }).catch((error) => {
-    debugLog('Init error: ' + error.message);
+    console.error('Init error:', error);
 });
 
 const pointer = { x: 0.5, y: 0.5 };

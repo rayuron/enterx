@@ -52,7 +52,13 @@ body {
 
 .webgl canvas.bird-canvas {
     z-index: 0;
-    filter: contrast(1.08) saturate(1.1);
+    /* Disable filter on mobile - it can break canvas rendering on iOS Safari */
+}
+
+@media (min-width: 768px) {
+    .webgl canvas.bird-canvas {
+        filter: contrast(1.08) saturate(1.1);
+    }
 }
 
 .overlay {

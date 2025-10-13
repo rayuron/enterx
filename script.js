@@ -72,7 +72,7 @@ const initBirdSketch = () => {
                 canvas.elt.style.pointerEvents = 'none';
 
                 // Style canvas to fill screen (CSS size is independent of canvas resolution)
-                canvas.elt.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;display:block;margin:0;padding:0;';
+                canvas.elt.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;display:block;margin:0;padding:0;z-index:10000!important;';
 
                 // Use p5.js canvas.style() method as recommended
                 canvas.style('display', 'block');
@@ -105,16 +105,19 @@ const initBirdSketch = () => {
         p.draw = () => {
             drawCount++;
             if (drawCount === 1) {
-                debugLog('draw() called');
+                debugLog('draw() called, frameRate: ' + Math.round(p.frameRate()));
             }
 
-            p.background(210, 30, 250, 255);
+            // Use RGB instead of HSB for debugging
+            p.colorMode(p.RGB, 255, 255, 255, 255);
+            p.background(0, 255, 0);  // Bright green - very visible
 
             // Debug: Draw a simple test shape
             p.fill(255, 0, 0, 255);
             p.noStroke();
             p.circle(p.width / 2, p.height / 2, 100);
 
+            p.colorMode(p.HSB, 360, 255, 255, 255);
             p.noFill();
             p.strokeWeight(0.7);
 

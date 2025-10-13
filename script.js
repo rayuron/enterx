@@ -68,12 +68,13 @@ if (overlay) {
 const logotype = document.querySelector('.logotype');
 if (logotype) {
     logotype.style.cssText = `
-        font-size: clamp(2rem, 4.5vw, 2.8rem);
-        font-weight: 800;
-        letter-spacing: 0.72em;
+        font-family: "Futura", "Futura PT", "Avenir Next", "Helvetica Neue", "Noto Sans JP", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        font-size: clamp(2.2rem, 4.8vw, 3.1rem);
+        font-weight: 700;
+        letter-spacing: 0.28em;
         color: rgba(14, 18, 28, 0.98);
         text-align: center;
-        padding-left: 0.72em;
+        padding-left: 0.28em;
         text-shadow: 0 3px 18px rgba(255, 255, 255, 0.32);
     `;
 }
@@ -202,13 +203,27 @@ const initBirdSketch = () => {
             p.background(0, 0, 255, 255);
             p.strokeWeight(0.7);
 
+            const computeTouchOffsets = () => ({
+                x: (touchX - 0.5) * touchInfluence * 0.3,
+                y: (touchY - 0.5) * touchInfluence * 0.3,
+            });
+
+            const calculateWaveBundle = (time, offsets, influence) => ({
+                crest: p.sin(time * 2.2 + offsets.x) * (0.75 + influence * 0.2),
+                sway: p.cos(time * 3.1 + offsets.y) * (0.55 + influence * 0.15),
+                flutter: p.sin(time * 1.8 + offsets.x * 0.5) * (0.45 + influence * 0.1),
+                drift: p.cos(time * 2.6 + offsets.y * 0.5) * (0.35 + influence * 0.08),
+                shimmer: p.sin(time * 1.5) * (0.25 + influence * 0.05),
+            });
+
             const applyFeatherColor = (y, s, alpha = 140) => {
                 const longitudinal = p.constrain(1 - y / 45, 0, 1);
                 const span = p.constrain(s, 0, 1);
                 const tipShift = p.lerp(-18, 12, span);
                 const shimmer = p.sin(t * 0.6 + y * 0.18 + span * p.TWO_PI) * 5;
                 const ripple = p.cos(t * 0.45 + y * 0.12) * 3;
-                const hueBase = p.constrain(202 + tipShift * 0.55 + shimmer + ripple, 188, 228);
+                const emberPulse = p.sin(t * 0.7 + y * 0.21 + span * p.PI * 1.4) * 4;
+                const hueBase = p.constrain(202 + tipShift * 0.55 + shimmer + ripple + emberPulse, 186, 231);
 
                 const saturation = p.constrain(
                     95
@@ -234,11 +249,39 @@ const initBirdSketch = () => {
                 return { hue: hueBase, saturation, brightness, depth: longitudinal, span };
             };
 
+            const computeCrimsonAccent = (span, depth, index) => {
+                const ridge = (p.sin(t * 1.2 + span * p.TWO_PI + index * 0.18) + 1) * 0.5;
+                const pulse = (p.cos(t * 0.9 + span * p.PI * 3 + index * 0.12) + 1) * 0.5;
+                const centerBias = 1 - Math.min(Math.abs(span - 0.42) * 2.1, 1);
+                const depthBias = Math.pow(depth, 1.25);
+                return p.constrain(centerBias * 0.45 + depthBias * 0.35 + ridge * 0.25 + pulse * 0.2, 0, 1);
+            };
+
+            const renderCrimsonAccent = (x1, y1, x2, y2, intensity) => {
+                if (intensity <= 0.08) {
+                    return;
+                }
+
+                p.push();
+                p.colorMode(p.HSB, 360, 255, 255, 255);
+                const hue = p.lerp(8, 18, (p.sin(t * 1.35 + x1 * 0.01 + y1 * 0.01) + 1) * 0.5);
+                const saturation = p.constrain(170 + intensity * 70, 0, 255);
+                const brightness = p.constrain(210 + intensity * 35, 0, 255);
+                const alpha = 40 + intensity * 72;
+                p.stroke(hue, saturation, brightness, alpha);
+                p.strokeWeight(0.45 + intensity * 0.65);
+                const accentBendX = (touchX - 0.5) * intensity * 5.5;
+                const accentBendY = (touchY - 0.5) * intensity * -4.2;
+                p.line(x1 + accentBendX, y1 + accentBendY, x2 - accentBendX * 0.4, y2 - accentBendY * 0.6);
+                p.pop();
+            };
+
             const drawLayeredStroke = (x1, y1, x2, y2, yIndex, sIndex, alpha = 120) => {
                 const featherFactor = 0.65 + (1 - sIndex) * 0.45 + touchInfluence * 0.25;
 
                 // Base chroma in HSB space
                 const chroma = applyFeatherColor(yIndex, sIndex, alpha);
+                const crimsonAccent = computeCrimsonAccent(sIndex, chroma.depth, yIndex);
                 p.strokeWeight(0.75 + featherFactor * 0.32);
                 p.line(x1, y1, x2, y2);
 
@@ -246,10 +289,10 @@ const initBirdSketch = () => {
                 p.push();
                 p.colorMode(p.RGB, 255, 255, 255, 255);
                 const glowDepth = chroma.depth;
-                const glowAlpha = 38 + featherFactor * 30 + touchInfluence * 42 + glowDepth * 22;
+                const glowAlpha = 38 + featherFactor * 30 + touchInfluence * 42 + glowDepth * 22 + crimsonAccent * 18;
                 const glowBlue = p.constrain(196 + glowDepth * 52 + featherFactor * 18, 180, 255);
                 const glowGreen = p.constrain(190 + glowDepth * 38 + p.sin(t * 1.2 + sIndex * p.TWO_PI) * 8, 170, 255);
-                const glowRed = p.constrain(150 + glowDepth * 26 + p.cos(t * 0.9 + yIndex * 0.12) * 6, 130, 210);
+                const glowRed = p.constrain(150 + glowDepth * 26 + p.cos(t * 0.9 + yIndex * 0.12) * 6 + crimsonAccent * 48, 130, 230);
                 p.stroke(glowRed, glowGreen, glowBlue, glowAlpha);
                 p.strokeWeight(1.25 + featherFactor * 0.6);
                 p.line(x1, y1, x2, y2);
@@ -269,18 +312,13 @@ const initBirdSketch = () => {
                 p.line(x1 + shadowOffsetX, y1 + shadowOffsetY, x2 + shadowOffsetX, y2 + shadowOffsetY);
                 p.pop();
 
+                renderCrimsonAccent(x1, y1, x2, y2, crimsonAccent);
+
                 p.colorMode(p.HSB, 360, 255, 255, 255);
             };
 
-            // Add touch influence to wave motion
-            const touchOffsetX = (touchX - 0.5) * touchInfluence * 0.3;
-            const touchOffsetY = (touchY - 0.5) * touchInfluence * 0.3;
-
-            const w1 = p.sin(t * 2.2 + touchOffsetX) * (0.75 + touchInfluence * 0.2);
-            const w2 = p.cos(t * 3.1 + touchOffsetY) * (0.55 + touchInfluence * 0.15);
-            const w3 = p.sin(t * 1.8 + touchOffsetX * 0.5) * (0.45 + touchInfluence * 0.1);
-            const w4 = p.cos(t * 2.6 + touchOffsetY * 0.5) * (0.35 + touchInfluence * 0.08);
-            const w5 = p.sin(t * 1.5) * (0.25 + touchInfluence * 0.05);
+            const touchOffsets = computeTouchOffsets();
+            const waves = calculateWaveBundle(t, touchOffsets, touchInfluence);
 
             p.push();
             const scaleFactor = Math.min(p.width, p.height) / baseSize;
@@ -294,7 +332,7 @@ const initBirdSketch = () => {
                     const s = j / 17;
 
                     const a = -p.PI / 2.5
-                        + w1 * 0.85
+                        + waves.crest * 0.85
                         + p.sin(y * 0.18 + t * 1.5) * 0.28
                         + p.cos(y * 0.12 - t * 0.9) * 0.22
                         + p.sin(y * 0.25 + t * 1.2) * 0.15
@@ -323,19 +361,19 @@ const initBirdSketch = () => {
                     const l = (r * 0.75
                         + p.sin(s * p.PI) * r * 0.6
                         + p.cos(s * p.PI * 2) * 0.3)
-                        * p.cos(w1 * 0.85 + p.sin(s * p.PI) * 0.2)
-                        * p.sin(w2 + s * p.PI * 0.45)
-                        * p.cos(w3 * 0.3 + y * 0.1);
+                        * p.cos(waves.crest * 0.85 + p.sin(s * p.PI) * 0.2)
+                        * p.sin(waves.sway + s * p.PI * 0.45)
+                        * p.cos(waves.flutter * 0.3 + y * 0.1);
 
                     const x2 = x1 - l * p.cos(b)
-                        * (p.cos(w1 * 0.65)
+                        * (p.cos(waves.crest * 0.65)
                             + p.sin(y * 0.22 + t * 0.8) * 0.28
-                            + p.cos(w4 + s * p.TWO_PI * 0.3) * 0.15);
+                            + p.cos(waves.drift + s * p.TWO_PI * 0.3) * 0.15);
                     const y2 = y1 - l * p.sin(b)
                         * (1
-                            + p.cos(w2 * 0.45 + s * p.TWO_PI) * 0.18
-                            + p.sin(w3 * 0.5 + y * 0.12) * 0.12
-                            + p.cos(w5 + s * p.PI) * 0.08);
+                            + p.cos(waves.sway * 0.45 + s * p.TWO_PI) * 0.18
+                            + p.sin(waves.flutter * 0.5 + y * 0.12) * 0.12
+                            + p.cos(waves.shimmer + s * p.PI) * 0.08);
 
                     drawLayeredStroke(x1, y1, x2, y2, y, s);
                 }
@@ -347,7 +385,7 @@ const initBirdSketch = () => {
                     const s = j / 17;
 
                     const a = -p.PI / 2.5
-                        - w1 * 0.85
+                        - waves.crest * 0.85
                         - p.sin(y * 0.18 + t * 1.5) * 0.28
                         - p.cos(y * 0.12 - t * 0.9) * 0.22
                         - p.sin(y * 0.25 + t * 1.2) * 0.15
@@ -376,19 +414,19 @@ const initBirdSketch = () => {
                     const l = (r * 0.75
                         + p.sin(s * p.PI) * r * 0.6
                         + p.cos(s * p.PI * 2) * 0.3)
-                        * p.cos(-w1 * 0.85 - p.sin(s * p.PI) * 0.2)
-                        * p.sin(-w2 + s * p.PI * 0.45)
-                        * p.cos(-w3 * 0.3 + y * 0.1);
+                        * p.cos(-waves.crest * 0.85 - p.sin(s * p.PI) * 0.2)
+                        * p.sin(-waves.sway + s * p.PI * 0.45)
+                        * p.cos(-waves.flutter * 0.3 + y * 0.1);
 
                     const x2 = x1 - l * p.cos(b)
-                        * (p.cos(-w1 * 0.65)
+                        * (p.cos(-waves.crest * 0.65)
                             - p.sin(y * 0.22 + t * 0.8) * 0.28
-                            - p.cos(-w4 + s * p.TWO_PI * 0.3) * 0.15);
+                            - p.cos(-waves.drift + s * p.TWO_PI * 0.3) * 0.15);
                     const y2 = y1 - l * p.sin(b)
                         * (1
-                            + p.cos(-w2 * 0.45 + s * p.TWO_PI) * 0.18
-                            + p.sin(-w3 * 0.5 + y * 0.12) * 0.12
-                            + p.cos(-w5 + s * p.PI) * 0.08);
+                            + p.cos(-waves.sway * 0.45 + s * p.TWO_PI) * 0.18
+                            + p.sin(-waves.flutter * 0.5 + y * 0.12) * 0.12
+                            + p.cos(-waves.shimmer + s * p.PI) * 0.08);
 
                     drawLayeredStroke(x1, y1, x2, y2, y, s);
                 }
@@ -428,9 +466,9 @@ const initBirdSketch = () => {
                         + p.sin(s * p.PI * 1.5 + t * 1.7) * 4;
                     const y2 = y1 + r * p.sin(a)
                         * (1
-                            + p.sin(w3 + y * 0.18) * 0.14
-                            + p.cos(w4 + s * p.PI) * 0.09
-                            + p.sin(w5 + y * 0.12) * 0.06);
+                            + p.sin(waves.flutter + y * 0.18) * 0.14
+                            + p.cos(waves.drift + s * p.PI) * 0.09
+                            + p.sin(waves.shimmer + y * 0.12) * 0.06);
 
                     drawLayeredStroke(x1, y1, x2, y2, y, s, 100);
                 }

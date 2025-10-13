@@ -24,28 +24,57 @@ if (overlay) {
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 1.2rem 2rem;
+        padding: 1.4rem 2.4rem;
         min-width: 240px;
-        width: min(82vw, 540px);
+        width: min(82vw, 560px);
         border-radius: 999px;
-        background: linear-gradient(160deg, rgba(255, 255, 255, 0.24), rgba(213, 229, 255, 0.16));
-        backdrop-filter: blur(24px) saturate(160%);
-        border: 1px solid rgba(255, 255, 255, 0.42);
-        box-shadow: 0 40px 120px rgba(60, 110, 180, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.58), inset 0 -16px 28px rgba(58, 93, 160, 0.1);
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.32), rgba(230, 242, 255, 0.18));
+        backdrop-filter: blur(32px) saturate(180%);
+        border: 0.5px solid rgba(255, 255, 255, 0.5);
+        box-shadow:
+            0 8px 32px rgba(60, 110, 180, 0.12),
+            0 2px 8px rgba(60, 110, 180, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 0.7),
+            inset 0 -1px 0 rgba(255, 255, 255, 0.3),
+            inset 0 0 60px rgba(255, 255, 255, 0.05);
         z-index: 1;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     `;
+
+    // Add hover/touch effect for liquid glass
+    overlay.addEventListener('pointerenter', () => {
+        overlay.style.transform = 'scale(1.02)';
+        overlay.style.boxShadow = `
+            0 12px 48px rgba(60, 110, 180, 0.18),
+            0 4px 12px rgba(60, 110, 180, 0.12),
+            inset 0 1px 0 rgba(255, 255, 255, 0.8),
+            inset 0 -1px 0 rgba(255, 255, 255, 0.4),
+            inset 0 0 80px rgba(255, 255, 255, 0.08)
+        `;
+    });
+
+    overlay.addEventListener('pointerleave', () => {
+        overlay.style.transform = 'scale(1)';
+        overlay.style.boxShadow = `
+            0 8px 32px rgba(60, 110, 180, 0.12),
+            0 2px 8px rgba(60, 110, 180, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 0.7),
+            inset 0 -1px 0 rgba(255, 255, 255, 0.3),
+            inset 0 0 60px rgba(255, 255, 255, 0.05)
+        `;
+    });
 }
 
 const logotype = document.querySelector('.logotype');
 if (logotype) {
     logotype.style.cssText = `
-        font-size: 0.8rem;
-        font-weight: 400;
-        letter-spacing: 0.7em;
-        text-transform: uppercase;
-        color: rgba(0, 33, 85, 0.78);
+        font-size: 0.85rem;
+        font-weight: 500;
+        letter-spacing: 0.72em;
+        color: rgba(0, 33, 85, 0.85);
         text-align: center;
-        padding-left: 0.8em;
+        padding-left: 0.72em;
+        text-shadow: 0 0.5px 1px rgba(255, 255, 255, 0.8);
     `;
 }
 
@@ -60,6 +89,12 @@ const initBirdSketch = () => {
         let t = 0;
         const baseSize = 400;
         let canvas;
+
+        // Touch/mouse interaction
+        let touchX = 0.5;
+        let touchY = 0.5;
+        let touchActive = false;
+        let touchInfluence = 0;
 
         p.setup = () => {
             try {
@@ -116,8 +151,56 @@ const initBirdSketch = () => {
             p.resizeCanvas(window.innerWidth, window.innerHeight);
         };
 
+        // Touch and mouse interaction handlers
+        p.touchStarted = () => {
+            if (p.touches.length > 0) {
+                touchX = p.touches[0].x / p.width;
+                touchY = p.touches[0].y / p.height;
+                touchActive = true;
+            }
+            return false; // Prevent default
+        };
+
+        p.touchMoved = () => {
+            if (p.touches.length > 0) {
+                touchX = p.touches[0].x / p.width;
+                touchY = p.touches[0].y / p.height;
+                touchActive = true;
+            }
+            return false;
+        };
+
+        p.touchEnded = () => {
+            touchActive = false;
+            return false;
+        };
+
+        p.mouseMoved = () => {
+            touchX = p.mouseX / p.width;
+            touchY = p.mouseY / p.height;
+            touchActive = true;
+        };
+
+        p.mousePressed = () => {
+            touchActive = true;
+        };
+
+        p.mouseReleased = () => {
+            touchActive = false;
+        };
+
         p.draw = () => {
-            p.background(210, 30, 250, 255);
+            // Smoothly interpolate touch influence
+            if (touchActive) {
+                touchInfluence = p.lerp(touchInfluence, 1, 0.1);
+            } else {
+                touchInfluence = p.lerp(touchInfluence, 0, 0.05);
+            }
+
+            // Dynamic background with touch influence
+            const bgHue = 210 + touchInfluence * (touchX - 0.5) * 20;
+            const bgSat = 30 + touchInfluence * 20;
+            p.background(bgHue, bgSat, 250, 255);
             p.strokeWeight(0.7);
 
             const applyBlueStroke = (y, s, alpha = 110) => {
@@ -129,11 +212,15 @@ const initBirdSketch = () => {
                 p.stroke(hue, saturation, 255, alpha);
             };
 
-            const w1 = p.sin(t * 2.2) * 0.75;
-            const w2 = p.cos(t * 3.1) * 0.55;
-            const w3 = p.sin(t * 1.8) * 0.45;
-            const w4 = p.cos(t * 2.6) * 0.35;
-            const w5 = p.sin(t * 1.5) * 0.25;
+            // Add touch influence to wave motion
+            const touchOffsetX = (touchX - 0.5) * touchInfluence * 0.3;
+            const touchOffsetY = (touchY - 0.5) * touchInfluence * 0.3;
+
+            const w1 = p.sin(t * 2.2 + touchOffsetX) * (0.75 + touchInfluence * 0.2);
+            const w2 = p.cos(t * 3.1 + touchOffsetY) * (0.55 + touchInfluence * 0.15);
+            const w3 = p.sin(t * 1.8 + touchOffsetX * 0.5) * (0.45 + touchInfluence * 0.1);
+            const w4 = p.cos(t * 2.6 + touchOffsetY * 0.5) * (0.35 + touchInfluence * 0.08);
+            const w5 = p.sin(t * 1.5) * (0.25 + touchInfluence * 0.05);
 
             p.push();
             const scaleFactor = Math.min(p.width, p.height) / baseSize;

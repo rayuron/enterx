@@ -63,6 +63,13 @@ const initBirdSketch = () => {
 
         p.draw = () => {
             p.background(210, 30, 250, 255);
+
+            // Debug: Draw a simple test shape
+            p.fill(255, 0, 0, 255);
+            p.noStroke();
+            p.circle(p.width / 2, p.height / 2, 100);
+
+            p.noFill();
             p.strokeWeight(0.7);
 
             const applyBlueStroke = (y, s, alpha = 110) => {

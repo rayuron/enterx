@@ -44,18 +44,20 @@ const initBirdSketch = () => {
                 let canvasHeight = window.innerHeight;
 
                 if (isMobile) {
-                    const maxSize = 1280;
-                    const aspectRatio = canvasWidth / canvasHeight;
+                    // Use even smaller size for iOS Safari - 720p
+                    const maxWidth = 720;
+                    const maxHeight = 720;
 
-                    if (canvasWidth > maxSize || canvasHeight > maxSize) {
-                        if (aspectRatio > 1) {
-                            canvasWidth = maxSize;
-                            canvasHeight = Math.floor(maxSize / aspectRatio);
-                        } else {
-                            canvasHeight = maxSize;
-                            canvasWidth = Math.floor(maxSize * aspectRatio);
-                        }
+                    if (canvasWidth > maxWidth) {
+                        canvasHeight = Math.floor(canvasHeight * (maxWidth / canvasWidth));
+                        canvasWidth = maxWidth;
                     }
+                    if (canvasHeight > maxHeight) {
+                        canvasWidth = Math.floor(canvasWidth * (maxHeight / canvasHeight));
+                        canvasHeight = maxHeight;
+                    }
+
+                    debugLog('Reduced canvas size to: ' + canvasWidth + 'x' + canvasHeight);
                 }
 
                 // Explicitly use P2D renderer for better mobile compatibility
@@ -81,6 +83,16 @@ const initBirdSketch = () => {
                 p.strokeCap(p.ROUND);
                 p.colorMode(p.HSB, 360, 255, 255, 255);
                 debugLog('Canvas: ' + canvas.width + 'x' + canvas.height + ' (display: ' + window.innerWidth + 'x' + window.innerHeight + ') mobile:' + isMobile);
+
+                // Check if canvas element exists in DOM
+                setTimeout(() => {
+                    const canvasInDom = document.querySelector('canvas');
+                    debugLog('Canvas in DOM: ' + (canvasInDom ? 'YES' : 'NO'));
+                    if (canvasInDom) {
+                        const styles = window.getComputedStyle(canvasInDom);
+                        debugLog('Canvas display: ' + styles.display + ', visibility: ' + styles.visibility + ', opacity: ' + styles.opacity + ', zIndex: ' + styles.zIndex);
+                    }
+                }, 100);
             } catch (error) {
                 debugLog('Canvas error: ' + error.message);
             }

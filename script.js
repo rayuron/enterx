@@ -6,7 +6,7 @@ document.body.style.cssText = `
     display: grid;
     place-items: center;
     position: relative;
-    font-family: "Inter", "Noto Sans JP", "IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: "Futura", "Futura PT", "Avenir Next", "Helvetica Neue", "Noto Sans JP", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 `;
 
 const container = document.querySelector('.webgl');
@@ -28,15 +28,15 @@ if (overlay) {
         min-width: 240px;
         width: min(82vw, 560px);
         border-radius: 999px;
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.32), rgba(230, 242, 255, 0.18));
-        backdrop-filter: blur(32px) saturate(180%);
-        border: 0.5px solid rgba(255, 255, 255, 0.5);
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(230, 242, 255, 0.08));
+        backdrop-filter: blur(32px) saturate(170%);
+        border: 0.5px solid rgba(255, 255, 255, 0.35);
         box-shadow:
-            0 8px 32px rgba(60, 110, 180, 0.12),
-            0 2px 8px rgba(60, 110, 180, 0.08),
-            inset 0 1px 0 rgba(255, 255, 255, 0.7),
-            inset 0 -1px 0 rgba(255, 255, 255, 0.3),
-            inset 0 0 60px rgba(255, 255, 255, 0.05);
+            0 8px 32px rgba(60, 110, 180, 0.08),
+            0 2px 8px rgba(60, 110, 180, 0.06),
+            inset 0 1px 0 rgba(255, 255, 255, 0.55),
+            inset 0 -1px 0 rgba(255, 255, 255, 0.22),
+            inset 0 0 60px rgba(255, 255, 255, 0.03);
         z-index: 1;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     `;
@@ -45,22 +45,22 @@ if (overlay) {
     overlay.addEventListener('pointerenter', () => {
         overlay.style.transform = 'scale(1.02)';
         overlay.style.boxShadow = `
-            0 12px 48px rgba(60, 110, 180, 0.18),
-            0 4px 12px rgba(60, 110, 180, 0.12),
-            inset 0 1px 0 rgba(255, 255, 255, 0.8),
-            inset 0 -1px 0 rgba(255, 255, 255, 0.4),
-            inset 0 0 80px rgba(255, 255, 255, 0.08)
+            0 12px 48px rgba(60, 110, 180, 0.12),
+            0 4px 12px rgba(60, 110, 180, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 0.65),
+            inset 0 -1px 0 rgba(255, 255, 255, 0.28),
+            inset 0 0 80px rgba(255, 255, 255, 0.05)
         `;
     });
 
     overlay.addEventListener('pointerleave', () => {
         overlay.style.transform = 'scale(1)';
         overlay.style.boxShadow = `
-            0 8px 32px rgba(60, 110, 180, 0.12),
-            0 2px 8px rgba(60, 110, 180, 0.08),
-            inset 0 1px 0 rgba(255, 255, 255, 0.7),
-            inset 0 -1px 0 rgba(255, 255, 255, 0.3),
-            inset 0 0 60px rgba(255, 255, 255, 0.05)
+            0 8px 32px rgba(60, 110, 180, 0.08),
+            0 2px 8px rgba(60, 110, 180, 0.06),
+            inset 0 1px 0 rgba(255, 255, 255, 0.55),
+            inset 0 -1px 0 rgba(255, 255, 255, 0.22),
+            inset 0 0 60px rgba(255, 255, 255, 0.03)
         `;
     });
 }
@@ -68,13 +68,13 @@ if (overlay) {
 const logotype = document.querySelector('.logotype');
 if (logotype) {
     logotype.style.cssText = `
-        font-size: 0.85rem;
-        font-weight: 500;
+        font-size: 1.58rem;
+        font-weight: 800;
         letter-spacing: 0.72em;
-        color: rgba(0, 33, 85, 0.85);
+        color: rgba(255, 255, 255, 0.96);
         text-align: center;
         padding-left: 0.72em;
-        text-shadow: 0 0.5px 1px rgba(255, 255, 255, 0.8);
+        text-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
     `;
 }
 
@@ -197,19 +197,53 @@ const initBirdSketch = () => {
                 touchInfluence = p.lerp(touchInfluence, 0, 0.05);
             }
 
-            // Dynamic background with touch influence
-            const bgHue = 210 + touchInfluence * (touchX - 0.5) * 20;
-            const bgSat = 30 + touchInfluence * 20;
-            p.background(bgHue, bgSat, 250, 255);
+            // Solid white background per request
+            p.background(0, 0, 255, 255);
             p.strokeWeight(0.7);
 
-            const applyBlueStroke = (y, s, alpha = 110) => {
-                const baseHue = 208;
-                const hueOffset = p.sin(t * 0.8 + y * 0.3 + s * p.TWO_PI) * 10
-                    + p.cos(t * 0.6 + y * 0.18) * 8;
-                const hue = (baseHue + hueOffset + 360) % 360;
-                const saturation = p.constrain(90 + p.sin(t * 0.9 + s * p.PI) * 25 + p.cos(y * 0.24 + t * 0.5) * 18, 40, 150);
-                p.stroke(hue, saturation, 255, alpha);
+            const applyWhiteStroke = (y, s, alpha = 110) => {
+                const brightness = p.constrain(
+                    225
+                        + p.sin(t * 0.9 + s * p.PI) * 18
+                        + p.cos(y * 0.24 + t * 0.5) * 14
+                        + p.sin(y * 0.18 + t * 0.7) * 10,
+                    200,
+                    255,
+                );
+                p.stroke(0, 0, brightness, alpha);
+            };
+
+            const drawLayeredStroke = (x1, y1, x2, y2, yIndex, sIndex, alpha = 110) => {
+                const featherFactor = 0.65 + (1 - sIndex) * 0.45 + touchInfluence * 0.25;
+
+                // Base chroma in HSB space
+                applyWhiteStroke(yIndex, sIndex, alpha);
+                p.strokeWeight(0.7 + featherFactor * 0.25);
+                p.line(x1, y1, x2, y2);
+
+                // Soft luminous highlight using RGB stroke(r,g,b,alpha)
+                p.push();
+                p.colorMode(p.RGB, 255, 255, 255, 255);
+                const glowAlpha = 36 + featherFactor * 26 + touchInfluence * 40;
+                const glowIntensity = 220 + featherFactor * 20;
+                p.stroke(glowIntensity, glowIntensity, glowIntensity, glowAlpha);
+                p.strokeWeight(1.2 + featherFactor * 0.55);
+                p.line(x1, y1, x2, y2);
+
+                // Inner core accent with stroke(grayscale, alpha)
+                const coreAlpha = 16 + featherFactor * 18;
+                p.stroke(255, coreAlpha);
+                p.strokeWeight(0.6 + featherFactor * 0.35);
+                p.line(x1, y1, x2, y2);
+
+                // Ambient shadow to add depth
+                const shadowOffsetX = (touchX - 0.5) * 6;
+                const shadowOffsetY = (touchY - 0.5) * 6;
+                const shadowAlpha = 26 + featherFactor * 16;
+                p.stroke(80, 80, 80, shadowAlpha);
+                p.strokeWeight(1.6 + featherFactor * 0.4);
+                p.line(x1 + shadowOffsetX, y1 + shadowOffsetY, x2 + shadowOffsetX, y2 + shadowOffsetY);
+                p.pop();
             };
 
             // Add touch influence to wave motion
@@ -277,8 +311,7 @@ const initBirdSketch = () => {
                             + p.sin(w3 * 0.5 + y * 0.12) * 0.12
                             + p.cos(w5 + s * p.PI) * 0.08);
 
-                    applyBlueStroke(y, s);
-                    p.line(x1, y1, x2, y2);
+                    drawLayeredStroke(x1, y1, x2, y2, y, s);
                 }
             }
 
@@ -331,8 +364,7 @@ const initBirdSketch = () => {
                             + p.sin(-w3 * 0.5 + y * 0.12) * 0.12
                             + p.cos(-w5 + s * p.PI) * 0.08);
 
-                    applyBlueStroke(y, s);
-                    p.line(x1, y1, x2, y2);
+                    drawLayeredStroke(x1, y1, x2, y2, y, s);
                 }
             }
 
@@ -374,14 +406,13 @@ const initBirdSketch = () => {
                             + p.cos(w4 + s * p.PI) * 0.09
                             + p.sin(w5 + y * 0.12) * 0.06);
 
-                    applyBlueStroke(y, s, 100);
-                    p.line(x1, y1, x2, y2);
+                    drawLayeredStroke(x1, y1, x2, y2, y, s, 100);
                 }
             }
 
             p.pop();
 
-            t += p.PI / 150;
+            t += p.PI / 300;
         };
     };
 

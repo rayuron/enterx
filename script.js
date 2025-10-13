@@ -24,9 +24,9 @@ if (overlay) {
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 1.2rem 2.1rem;
-        min-width: 200px;
-        width: min(68vw, 460px);
+        padding: 1.4rem 2.4rem;
+        min-width: 240px;
+        width: min(82vw, 560px);
         border-radius: 999px;
         background: linear-gradient(135deg, rgba(255, 255, 255, 0.16), rgba(226, 238, 255, 0.08));
         backdrop-filter: blur(34px) saturate(180%);
@@ -69,32 +69,17 @@ const logotype = document.querySelector('.logotype');
 if (logotype) {
     logotype.style.cssText = `
         font-family: "Futura", "Futura PT", "Avenir Next", "Helvetica Neue", "Noto Sans JP", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-        font-size: clamp(1.8rem, 3.8vw, 2.6rem);
+        font-size: clamp(2.2rem, 4.8vw, 3.1rem);
         font-weight: 700;
-        letter-spacing: 0.24em;
+        letter-spacing: 0.28em;
         color: rgba(14, 18, 28, 0.98);
         text-align: center;
-        padding-left: 0.24em;
+        padding-left: 0.28em;
         text-shadow: 0 3px 18px rgba(255, 255, 255, 0.32);
     `;
 }
 
 let compositionOffset = { x: 0, y: 0 };
-
-const simplifiedLayout = {
-    primaryLayers: 12,
-    primarySegments: 6,
-    mirrorLayers: 12,
-    mirrorSegments: 6,
-    accentLayers: 6,
-    accentSegments: 4,
-};
-
-const layerSpacing = {
-    primary: 1.35,
-    mirror: 1.35,
-    accent: 1.1,
-};
 
 const updateLayout = () => {
     const width = window.innerWidth || 0;
@@ -104,20 +89,20 @@ const updateLayout = () => {
     const isExtraCompact = width <= 480;
 
     if (overlay) {
-        overlay.style.padding = isExtraCompact ? '0.7rem 1.3rem' : isCompact ? '0.95rem 1.8rem' : '1.15rem 2.1rem';
-        overlay.style.minWidth = isCompact ? '0' : '200px';
-        overlay.style.maxWidth = isExtraCompact ? '260px' : isCompact ? '360px' : '460px';
-        overlay.style.width = isExtraCompact ? 'min(64vw, 240px)' : isCompact ? 'min(52vw, 320px)' : 'min(38vw, 420px)';
+        overlay.style.padding = isExtraCompact ? '0.85rem 1.5rem' : isCompact ? '1.05rem 2rem' : '1.35rem 2.6rem';
+        overlay.style.minWidth = isCompact ? '0' : '240px';
+        overlay.style.maxWidth = isExtraCompact ? '320px' : isCompact ? '420px' : '560px';
+        overlay.style.width = isExtraCompact ? 'min(70vw, 300px)' : isCompact ? 'min(60vw, 360px)' : 'min(46vw, 520px)';
     }
 
     if (logotype) {
         logotype.style.fontSize = isExtraCompact
-            ? 'clamp(1.4rem, 7vw, 2rem)'
+            ? 'clamp(1.6rem, 8vw, 2.3rem)'
             : isCompact
-                ? 'clamp(1.6rem, 5vw, 2.3rem)'
-                : 'clamp(1.8rem, 3.4vw, 2.6rem)';
-        logotype.style.letterSpacing = isExtraCompact ? '0.16em' : isCompact ? '0.2em' : '0.24em';
-        logotype.style.paddingLeft = isExtraCompact ? '0.16em' : isCompact ? '0.2em' : '0.24em';
+                ? 'clamp(1.85rem, 6vw, 2.6rem)'
+                : 'clamp(2.2rem, 4.2vw, 3.1rem)';
+        logotype.style.letterSpacing = isExtraCompact ? '0.18em' : isCompact ? '0.22em' : '0.28em';
+        logotype.style.paddingLeft = isExtraCompact ? '0.18em' : isCompact ? '0.22em' : '0.28em';
     }
 
     const baseOffsetY = aspectRatio > 1.55 ? -12 : -6;
@@ -247,9 +232,9 @@ const initBirdSketch = () => {
         p.draw = () => {
             // Smoothly interpolate touch influence
             if (touchActive) {
-                touchInfluence = p.lerp(touchInfluence, 1, 0.08);
+                touchInfluence = p.lerp(touchInfluence, 1, 0.1);
             } else {
-                touchInfluence = p.lerp(touchInfluence, 0, 0.04);
+                touchInfluence = p.lerp(touchInfluence, 0, 0.05);
             }
 
             // Solid white background per request
@@ -262,11 +247,11 @@ const initBirdSketch = () => {
             });
 
             const calculateWaveBundle = (time, offsets, influence) => ({
-                crest: p.sin(time * 2.2 + offsets.x) * (0.48 + influence * 0.14),
-                sway: p.cos(time * 3.1 + offsets.y) * (0.38 + influence * 0.1),
-                flutter: p.sin(time * 1.8 + offsets.x * 0.5) * (0.28 + influence * 0.08),
-                drift: p.cos(time * 2.6 + offsets.y * 0.5) * (0.24 + influence * 0.06),
-                shimmer: p.sin(time * 1.5) * (0.18 + influence * 0.04),
+                crest: p.sin(time * 2.2 + offsets.x) * (0.75 + influence * 0.2),
+                sway: p.cos(time * 3.1 + offsets.y) * (0.55 + influence * 0.15),
+                flutter: p.sin(time * 1.8 + offsets.x * 0.5) * (0.45 + influence * 0.1),
+                drift: p.cos(time * 2.6 + offsets.y * 0.5) * (0.35 + influence * 0.08),
+                shimmer: p.sin(time * 1.5) * (0.25 + influence * 0.05),
             });
 
             const evaluatePointerLuminance = (y, span) => {
@@ -289,31 +274,31 @@ const initBirdSketch = () => {
                 const hueBase = p.constrain(214 + tipShift * 0.45 + shimmer + ripple + emberPulse * 0.65, 204, 234);
 
                 const saturation = p.constrain(
-                    100
-                        + longitudinal * 56
-                        + p.sin(t * 0.8 + span * p.PI) * 18
-                        + p.cos(y * 0.16 + t * 0.65) * 12,
-                    90,
-                    190,
+                    118
+                        + longitudinal * 78
+                        + p.sin(t * 0.8 + span * p.PI) * 28
+                        + p.cos(y * 0.16 + t * 0.65) * 18,
+                    100,
+                    215,
                 );
 
                 const baseBrightness = p.constrain(
-                    220
-                        + longitudinal * 28
-                        + p.cos(t * 0.9 + span * p.TWO_PI) * 12
-                        + p.sin(y * 0.22 + t * 0.5) * 8,
-                    208,
-                    252,
+                    215
+                        + longitudinal * 40
+                        + p.cos(t * 0.9 + span * p.TWO_PI) * 16
+                        + p.sin(y * 0.22 + t * 0.5) * 12,
+                    205,
+                    255,
                 );
 
                 const pointerGlow = evaluatePointerLuminance(y, span);
                 const pointerLift = pointerGlow * touchInfluence;
                 const brightness = p.constrain(
-                    baseBrightness + pointerLift * 32 - (1 - pointerGlow) * 10,
+                    baseBrightness + pointerLift * 48 - (1 - pointerGlow) * 12,
                     198,
-                    252,
+                    255,
                 );
-                const dynamicAlpha = p.constrain(alpha + pointerLift * 42, 50, 225);
+                const dynamicAlpha = p.constrain(alpha + pointerLift * 55, 60, 255);
 
                 p.colorMode(p.HSB, 360, 255, 255, 255);
                 p.stroke(hueBase, saturation, brightness, dynamicAlpha);
@@ -326,7 +311,7 @@ const initBirdSketch = () => {
                 const pulse = (p.cos(t * 0.9 + span * p.PI * 3 + index * 0.12) + 1) * 0.5;
                 const centerBias = 1 - Math.min(Math.abs(span - 0.42) * 2.1, 1);
                 const depthBias = Math.pow(depth, 1.25);
-                return p.constrain(centerBias * 0.32 + depthBias * 0.26 + ridge * 0.18 + pulse * 0.15, 0, 1);
+                return p.constrain(centerBias * 0.45 + depthBias * 0.35 + ridge * 0.25 + pulse * 0.2, 0, 1);
             };
 
             const renderCrimsonAccent = (x1, y1, x2, y2, intensity, pointerGlow = 0) => {
@@ -337,12 +322,12 @@ const initBirdSketch = () => {
                 p.push();
                 p.colorMode(p.HSB, 360, 255, 255, 255);
                 const hue = p.lerp(348, 356, (p.sin(t * 1.35 + x1 * 0.01 + y1 * 0.01) + 1) * 0.5);
-                const saturation = p.constrain(150 + intensity * 42, 0, 240);
+                const saturation = p.constrain(165 + intensity * 60, 0, 255);
                 const pointerLift = pointerGlow * touchInfluence;
-                const brightness = p.constrain(210 + intensity * 24 + pointerLift * 18, 0, 240);
-                const alpha = p.constrain(32 + intensity * 52 + pointerLift * 32, 0, 220);
+                const brightness = p.constrain(212 + intensity * 32 + pointerLift * 28, 0, 255);
+                const alpha = p.constrain(44 + intensity * 70 + pointerLift * 46, 0, 255);
                 p.stroke(hue, saturation, brightness, alpha);
-                p.strokeWeight(0.35 + intensity * 0.45);
+                p.strokeWeight(0.45 + intensity * 0.65);
                 const accentBendX = (touchX - 0.5) * (intensity + pointerLift * 0.6) * 5.5;
                 const accentBendY = (touchY - 0.5) * (intensity + pointerLift * 0.6) * -4.2;
                 p.line(x1 + accentBendX, y1 + accentBendY, x2 - accentBendX * 0.4, y2 - accentBendY * 0.6);
@@ -350,40 +335,40 @@ const initBirdSketch = () => {
             };
 
             const drawLayeredStroke = (x1, y1, x2, y2, yIndex, sIndex, alpha = 120) => {
-                const featherFactor = 0.5 + (1 - sIndex) * 0.32 + touchInfluence * 0.2;
+                const featherFactor = 0.65 + (1 - sIndex) * 0.45 + touchInfluence * 0.25;
 
                 // Base chroma in HSB space
                 const chroma = applyFeatherColor(yIndex, sIndex, alpha);
                 const crimsonAccent = computeCrimsonAccent(sIndex, chroma.depth, yIndex);
                 const pointerGlow = chroma.pointerGlow;
                 const pointerLift = pointerGlow * touchInfluence;
-                p.strokeWeight(0.55 + featherFactor * 0.24);
+                p.strokeWeight(0.75 + featherFactor * 0.32);
                 p.line(x1, y1, x2, y2);
 
                 // Soft luminous highlight using RGB stroke(r,g,b,alpha)
                 p.push();
                 p.colorMode(p.RGB, 255, 255, 255, 255);
                 const glowDepth = chroma.depth;
-                const glowAlpha = 26 + featherFactor * 22 + touchInfluence * 18 + glowDepth * 18 + crimsonAccent * 14 + pointerLift * 32;
-                const glowBlue = p.constrain(200 + glowDepth * 36 + featherFactor * 12 + pointerLift * 16, 188, 252);
-                const glowGreen = p.constrain(192 + glowDepth * 24 + p.sin(t * 1.2 + sIndex * p.TWO_PI) * 6 + pointerLift * 14, 178, 248);
-                const glowRed = p.constrain(158 + glowDepth * 18 + p.cos(t * 0.9 + yIndex * 0.12) * 5 + crimsonAccent * 38 + pointerLift * 18, 142, 222);
+                const glowAlpha = 38 + featherFactor * 30 + touchInfluence * 32 + glowDepth * 22 + crimsonAccent * 18 + pointerLift * 55;
+                const glowBlue = p.constrain(202 + glowDepth * 48 + featherFactor * 18 + pointerLift * 22, 188, 255);
+                const glowGreen = p.constrain(196 + glowDepth * 32 + p.sin(t * 1.2 + sIndex * p.TWO_PI) * 8 + pointerLift * 18, 178, 255);
+                const glowRed = p.constrain(160 + glowDepth * 24 + p.cos(t * 0.9 + yIndex * 0.12) * 6 + crimsonAccent * 52 + pointerLift * 26, 142, 236);
                 p.stroke(glowRed, glowGreen, glowBlue, glowAlpha);
-                p.strokeWeight(0.95 + featherFactor * 0.42);
+                p.strokeWeight(1.25 + featherFactor * 0.6);
                 p.line(x1, y1, x2, y2);
 
                 // Inner core accent with stroke(grayscale, alpha)
-                const coreAlpha = 18 + featherFactor * 14 + glowDepth * 12 + pointerLift * 24;
+                const coreAlpha = 26 + featherFactor * 18 + glowDepth * 16 + pointerLift * 36;
                 p.stroke(255, coreAlpha);
-                p.strokeWeight(0.55 + featherFactor * 0.28);
+                p.strokeWeight(0.65 + featherFactor * 0.38);
                 p.line(x1, y1, x2, y2);
 
                 // Ambient shadow to add depth
                 const shadowOffsetX = (touchX - 0.5) * 6;
                 const shadowOffsetY = (touchY - 0.5) * 6;
-                const shadowAlpha = Math.max(0, 14 + featherFactor * 12 + (1 - glowDepth) * 10 - pointerLift * 18);
+                const shadowAlpha = Math.max(0, 24 + featherFactor * 16 + (1 - glowDepth) * 16 - pointerLift * 26);
                 p.stroke(36, 58, 122, shadowAlpha);
-                p.strokeWeight(1.2 + featherFactor * 0.32);
+                p.strokeWeight(1.5 + featherFactor * 0.42);
                 p.line(x1 + shadowOffsetX, y1 + shadowOffsetY, x2 + shadowOffsetX, y2 + shadowOffsetY);
                 p.pop();
 
@@ -401,10 +386,10 @@ const initBirdSketch = () => {
             p.scale(scaleFactor);
             p.translate(-baseSize / 2 + compositionOffset.x, -baseSize / 2 + compositionOffset.y);
 
-            for (let i = 0; i < simplifiedLayout.primaryLayers; i++) {
-                const y = i * layerSpacing.primary;
-                for (let j = 0; j < simplifiedLayout.primarySegments; j++) {
-                    const s = simplifiedLayout.primarySegments <= 1 ? 0 : j / (simplifiedLayout.primarySegments - 1);
+            for (let i = 0; i < 50; i++) {
+                const y = i * 0.7;
+                for (let j = 0; j < 18; j++) {
+                    const s = j / 17;
 
                     const a = -p.PI / 2.5
                         + waves.crest * 0.85
@@ -454,10 +439,10 @@ const initBirdSketch = () => {
                 }
             }
 
-            for (let i = 0; i < simplifiedLayout.mirrorLayers; i++) {
-                const y = i * layerSpacing.mirror;
-                for (let j = 0; j < simplifiedLayout.mirrorSegments; j++) {
-                    const s = simplifiedLayout.mirrorSegments <= 1 ? 0 : j / (simplifiedLayout.mirrorSegments - 1);
+            for (let i = 0; i < 50; i++) {
+                const y = i * 0.7;
+                for (let j = 0; j < 18; j++) {
+                    const s = j / 17;
 
                     const a = -p.PI / 2.5
                         - waves.crest * 0.85
@@ -507,10 +492,10 @@ const initBirdSketch = () => {
                 }
             }
 
-            for (let i = 0; i < simplifiedLayout.accentLayers; i++) {
-                const y = i * layerSpacing.accent;
-                for (let j = 0; j < simplifiedLayout.accentSegments; j++) {
-                    const s = simplifiedLayout.accentSegments <= 1 ? 0 : j / (simplifiedLayout.accentSegments - 1);
+            for (let i = 0; i < 30; i++) {
+                const y = i * 0.55;
+                for (let j = 0; j < 12; j++) {
+                    const s = j / 11;
 
                     const a = p.PI / 2
                         + (s - 0.5) * 1.2

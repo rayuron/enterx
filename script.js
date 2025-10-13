@@ -79,6 +79,43 @@ if (logotype) {
     `;
 }
 
+let compositionOffset = { x: 0, y: 0 };
+
+const updateLayout = () => {
+    const width = window.innerWidth || 0;
+    const height = window.innerHeight || 0;
+    const aspectRatio = width > 0 ? height / width : 1;
+    const isCompact = width <= 768;
+    const isExtraCompact = width <= 480;
+
+    if (overlay) {
+        overlay.style.padding = isExtraCompact ? '0.85rem 1.5rem' : isCompact ? '1.05rem 2rem' : '1.35rem 2.6rem';
+        overlay.style.minWidth = isCompact ? '0' : '240px';
+        overlay.style.maxWidth = isExtraCompact ? '320px' : isCompact ? '420px' : '560px';
+        overlay.style.width = isExtraCompact ? 'min(70vw, 300px)' : isCompact ? 'min(60vw, 360px)' : 'min(46vw, 520px)';
+    }
+
+    if (logotype) {
+        logotype.style.fontSize = isExtraCompact
+            ? 'clamp(1.6rem, 8vw, 2.3rem)'
+            : isCompact
+                ? 'clamp(1.85rem, 6vw, 2.6rem)'
+                : 'clamp(2.2rem, 4.2vw, 3.1rem)';
+        logotype.style.letterSpacing = isExtraCompact ? '0.18em' : isCompact ? '0.22em' : '0.28em';
+        logotype.style.paddingLeft = isExtraCompact ? '0.18em' : isCompact ? '0.22em' : '0.28em';
+    }
+
+    const baseOffsetY = aspectRatio > 1.55 ? -12 : -6;
+    const compactOffsetY = isCompact ? (isExtraCompact ? -26 : -18) : baseOffsetY;
+    compositionOffset.x = 0;
+    compositionOffset.y = compactOffsetY;
+};
+
+window.addEventListener('resize', updateLayout);
+window.addEventListener('orientationchange', updateLayout);
+
+updateLayout();
+
 let birdSketchInstance = null;
 
 const initBirdSketch = () => {
@@ -151,6 +188,7 @@ const initBirdSketch = () => {
 
         p.windowResized = () => {
             p.resizeCanvas(window.innerWidth, window.innerHeight);
+            updateLayout();
         };
 
         // Touch and mouse interaction handlers
@@ -346,7 +384,7 @@ const initBirdSketch = () => {
             const scaleFactor = Math.min(p.width, p.height) / baseSize;
             p.translate(p.width / 2, p.height / 2);
             p.scale(scaleFactor);
-            p.translate(-baseSize / 2, -baseSize / 2);
+            p.translate(-baseSize / 2 + compositionOffset.x, -baseSize / 2 + compositionOffset.y);
 
             for (let i = 0; i < 50; i++) {
                 const y = i * 0.7;

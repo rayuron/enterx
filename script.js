@@ -36,33 +36,51 @@ const initBirdSketch = () => {
 
         p.setup = () => {
             try {
-                // Explicitly use P2D renderer for better mobile compatibility
-                canvas = p.createCanvas(window.innerWidth, window.innerHeight, p.P2D);
-                canvas.parent(container);
-
                 // Reduce pixel density for mobile performance
                 const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-                p.pixelDensity(isMobile ? 1 : Math.min(window.devicePixelRatio || 1, 2));
+
+                // iOS Safari has canvas size limits - use smaller size for mobile
+                let canvasWidth = window.innerWidth;
+                let canvasHeight = window.innerHeight;
+
+                if (isMobile) {
+                    const maxSize = 1280;
+                    const aspectRatio = canvasWidth / canvasHeight;
+
+                    if (canvasWidth > maxSize || canvasHeight > maxSize) {
+                        if (aspectRatio > 1) {
+                            canvasWidth = maxSize;
+                            canvasHeight = Math.floor(maxSize / aspectRatio);
+                        } else {
+                            canvasHeight = maxSize;
+                            canvasWidth = Math.floor(maxSize * aspectRatio);
+                        }
+                    }
+                }
+
+                // Explicitly use P2D renderer for better mobile compatibility
+                canvas = p.createCanvas(canvasWidth, canvasHeight, p.P2D);
+                canvas.parent(container);
+                p.pixelDensity(1); // Always use 1 to avoid memory issues
 
                 canvas.elt.classList.add('bird-canvas');
                 canvas.elt.setAttribute('aria-hidden', 'true');
                 canvas.elt.style.pointerEvents = 'none';
 
-                // Force visibility for debugging
+                // Style canvas to fill screen (CSS size is independent of canvas resolution)
                 canvas.elt.style.position = 'fixed';
                 canvas.elt.style.top = '0';
                 canvas.elt.style.left = '0';
-                canvas.elt.style.width = '100%';
-                canvas.elt.style.height = '100%';
-                canvas.elt.style.zIndex = '10000';
+                canvas.elt.style.width = '100vw';
+                canvas.elt.style.height = '100vh';
                 canvas.elt.style.display = 'block';
+                canvas.elt.style.objectFit = 'cover';
 
                 p.noFill();
                 p.strokeJoin(p.ROUND);
                 p.strokeCap(p.ROUND);
                 p.colorMode(p.HSB, 360, 255, 255, 255);
-                debugLog('Canvas created: ' + canvas.width + 'x' + canvas.height + ' mobile:' + isMobile);
-                debugLog('Canvas element: ' + canvas.elt.tagName);
+                debugLog('Canvas: ' + canvas.width + 'x' + canvas.height + ' (display: ' + window.innerWidth + 'x' + window.innerHeight + ') mobile:' + isMobile);
             } catch (error) {
                 debugLog('Canvas error: ' + error.message);
             }

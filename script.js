@@ -56,20 +56,6 @@ if (overlay) {
         transition: transform 0.4s cubic-bezier(0.33, 1, 0.68, 1), box-shadow 0.4s cubic-bezier(0.33, 1, 0.68, 1), background 0.4s ease;
     `;
 
-    const overlaySheen = document.createElement('span');
-    overlaySheen.setAttribute('aria-hidden', 'true');
-    overlaySheen.style.cssText = `
-        position: absolute;
-        inset: -45% -30%;
-        background: linear-gradient(120deg, rgba(255, 255, 255, 0.82) 16%, rgba(255, 255, 255, 0) 58%);
-        opacity: 0.62;
-        transform: rotate(12deg);
-        transition: opacity 0.5s ease, transform 0.6s cubic-bezier(0.33, 1, 0.68, 1);
-        mix-blend-mode: screen;
-        pointer-events: none;
-    `;
-    overlay.appendChild(overlaySheen);
-
     const overlayCaustic = document.createElement('span');
     overlayCaustic.setAttribute('aria-hidden', 'true');
     overlayCaustic.style.cssText = `
@@ -84,7 +70,6 @@ if (overlay) {
     `;
     overlay.appendChild(overlayCaustic);
 
-    overlaySheen.dataset.active = '0';
     overlayCaustic.dataset.active = '0';
 
     // Add hover/touch effect for liquid glass
@@ -97,9 +82,7 @@ if (overlay) {
             inset 0 -1px 0 rgba(168, 196, 232, 0.24),
             inset 0 0 170px rgba(255, 255, 255, 0.07)
         `;
-        overlaySheen.style.opacity = '0.72';
         overlayCaustic.style.opacity = '0.6';
-        overlaySheen.dataset.active = '1';
         overlayCaustic.dataset.active = '1';
     });
 
@@ -112,13 +95,10 @@ if (overlay) {
             inset 0 -1px 0 rgba(168, 196, 232, 0.2),
             inset 0 0 150px rgba(255, 255, 255, 0.05)
         `;
-        overlaySheen.style.opacity = '0.55';
         overlayCaustic.style.opacity = '0.46';
-        overlaySheen.dataset.active = '0';
         overlayCaustic.dataset.active = '0';
     });
 
-    overlay.__sheenElement = overlaySheen;
     overlay.__causticElement = overlayCaustic;
 }
 
@@ -693,18 +673,9 @@ const animateOverlay = () => {
         overlay.style.setProperty('--tilt-x', `${(overlayPointer.x - 0.5) * 14}deg`);
         overlay.style.setProperty('--tilt-y', `${(0.5 - overlayPointer.y) * 11}deg`);
 
-        const sheen = overlay.__sheenElement;
         const caustic = overlay.__causticElement;
         const pointerOffsetX = overlayPointer.x - 0.5;
         const pointerOffsetY = overlayPointer.y - 0.5;
-
-        if (sheen) {
-            const sheenActive = sheen.dataset.active === '1';
-            const sheenTranslateX = pointerOffsetX * (sheenActive ? 18 : 12);
-            const sheenTranslateY = pointerOffsetY * (sheenActive ? 20 : 14) - (sheenActive ? 2 : 0);
-            const sheenRotation = sheenActive ? 18 : 12;
-            sheen.style.transform = `translate3d(${sheenTranslateX}%, ${sheenTranslateY}%, 0) rotate(${sheenRotation}deg)`;
-        }
 
         if (caustic) {
             const causticActive = caustic.dataset.active === '1';

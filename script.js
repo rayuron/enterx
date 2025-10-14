@@ -29,6 +29,12 @@ if (!container) {
 // Style container
 container.style.cssText = 'position:fixed;inset:0;z-index:0;pointer-events:none;';
 
+const PHI = (1 + Math.sqrt(5)) / 2;
+
+const toRem = (value) => `${value.toFixed(2)}rem`;
+
+const goldenClamp = (base, vw) => `clamp(${toRem(base * PHI ** 2)}, ${vw.toFixed(2)}vw, ${toRem(base * PHI ** 3)})`;
+
 const overlay = document.querySelector('.overlay');
 const overlayBaseTransform = 'translateY(-50%)';
 const applyOverlayScale = (scale = 1) => {
@@ -48,11 +54,11 @@ if (overlay) {
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 0.42rem clamp(1.4rem, 6vw, 3rem);
-        min-height: 2.2rem;
-        width: 100%;
-        max-width: 17.5rem;
-        border-radius: 12px;
+        padding: 0.34rem clamp(${toRem(0.34 * PHI ** 2)}, 4.8vw, ${toRem(0.34 * PHI ** 3)});
+        min-height: ${toRem(0.34 * PHI * 3.4)};
+        width: 52vw;
+        max-width: ${toRem(10 * PHI)};
+        border-radius: ${(5.6 * PHI).toFixed(1)}px;
         overflow: hidden;
         background:
             radial-gradient(circle at var(--pointer-x, 50%) var(--pointer-y, 50%), rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0) 70%),
@@ -188,37 +194,37 @@ const updateLayout = () => {
     const isExtraCompact = width <= 480;
 
     if (overlay) {
-        overlay.style.padding = isExtraCompact
-            ? '0.32rem clamp(1rem, 8vw, 2.2rem)'
-            : isCompact
-                ? '0.36rem clamp(1.2rem, 7vw, 2.6rem)'
-                : '0.42rem clamp(1.4rem, 6vw, 3rem)';
-        overlay.style.minHeight = isExtraCompact ? '1.9rem' : isCompact ? '2rem' : '2.2rem';
-        overlay.style.borderRadius = isExtraCompact ? '8px' : isCompact ? '10px' : '12px';
+        const paddingBase = isExtraCompact ? 0.28 : isCompact ? 0.31 : 0.34;
+        const paddingVw = isExtraCompact ? 9.4 : isCompact ? 6.6 : 4.8;
+        overlay.style.padding = `${toRem(paddingBase)} ${goldenClamp(paddingBase, paddingVw)}`;
+        overlay.style.minHeight = toRem(paddingBase * PHI * 3.4);
+        const radiusBase = isExtraCompact ? 4.2 : isCompact ? 4.8 : 5.6;
+        overlay.style.borderRadius = `${(radiusBase * PHI).toFixed(1)}px`;
         overlay.style.top = '50%';
         overlay.style.left = '0';
         overlay.style.right = '0';
         overlay.style.width = isExtraCompact
-            ? '82vw'
+            ? '76vw'
             : isCompact
-                ? '70vw'
-                : '58vw';
+                ? '62vw'
+                : '52vw';
         overlay.style.maxWidth = isExtraCompact
-            ? '13.5rem'
+            ? toRem(6.2 * PHI)
             : isCompact
-                ? '15.5rem'
-                : '17.5rem';
+                ? toRem(8.1 * PHI)
+                : toRem(10 * PHI);
         overlay.style.margin = '0 auto';
         applyOverlayScale(overlay.dataset.hovered === '1' ? 1.02 : 1);
     }
 
     if (logotype) {
-        logotype.style.fontSize = isExtraCompact
-            ? 'clamp(1.2rem, 7vw, 1.6rem)'
-            : isCompact
-                ? 'clamp(1.3rem, 5.4vw, 1.8rem)'
-                : 'clamp(1.4rem, 3.8vw, 2.1rem)';
-        logotype.style.letterSpacing = isExtraCompact ? '0.08em' : isCompact ? '0.09em' : '0.1em';
+        const logotypeBase = isExtraCompact ? 1.05 : isCompact ? 1.12 : 1.18;
+        const fontMin = toRem(logotypeBase * PHI / 1.12);
+        const fontMax = toRem(logotypeBase * PHI * 1.1);
+        const vwScale = isExtraCompact ? 7.2 : isCompact ? 5.6 : 3.6;
+        logotype.style.fontSize = `clamp(${fontMin}, ${vwScale}vw, ${fontMax})`;
+        const baseTracking = isExtraCompact ? 0.072 : isCompact ? 0.082 : 0.092;
+        logotype.style.letterSpacing = `${(baseTracking * PHI).toFixed(3)}em`;
     }
 
     const baseOffsetY = aspectRatio > 1.55 ? -12 : -6;

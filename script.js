@@ -36,22 +36,22 @@ if (overlay) {
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 1.4rem 2.4rem;
-        min-width: 240px;
-        width: min(82vw, 560px);
+        padding: 1.1rem 2rem;
+        min-width: 220px;
+        width: min(66vw, 460px);
         border-radius: 999px;
         overflow: hidden;
         background:
-            radial-gradient(circle at var(--pointer-x, 50%) var(--pointer-y, 50%), rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0) 72%),
-            linear-gradient(155deg, rgba(255, 255, 255, 0.04), rgba(211, 225, 255, 0.03) 48%, rgba(255, 255, 255, 0.015));
-        backdrop-filter: blur(46px) saturate(195%) brightness(1.12);
-        border: 1px solid rgba(255, 255, 255, 0.3);
+            radial-gradient(circle at var(--pointer-x, 50%) var(--pointer-y, 50%), rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0) 72%),
+            linear-gradient(155deg, rgba(255, 255, 255, 0.02), rgba(211, 225, 255, 0.015) 48%, rgba(255, 255, 255, 0.008));
+        backdrop-filter: blur(42px) saturate(170%) brightness(1.08);
+        border: 1px solid rgba(255, 255, 255, 0.18);
         box-shadow:
-            0 18px 52px rgba(30, 60, 124, 0.1),
-            0 6px 22px rgba(30, 60, 124, 0.08),
-            inset 0 1px 0 rgba(255, 255, 255, 0.55),
-            inset 0 -1px 0 rgba(168, 196, 232, 0.2),
-            inset 0 0 160px rgba(255, 255, 255, 0.05);
+            0 14px 38px rgba(30, 60, 124, 0.08),
+            0 4px 18px rgba(30, 60, 124, 0.06),
+            inset 0 1px 0 rgba(255, 255, 255, 0.42),
+            inset 0 -1px 0 rgba(168, 196, 232, 0.16),
+            inset 0 0 140px rgba(255, 255, 255, 0.03);
         z-index: 1;
         transition: transform 0.4s cubic-bezier(0.33, 1, 0.68, 1), box-shadow 0.4s cubic-bezier(0.33, 1, 0.68, 1), background 0.4s ease;
     `;
@@ -61,9 +61,9 @@ if (overlay) {
     overlayCaustic.style.cssText = `
         position: absolute;
         inset: -20%;
-        background: radial-gradient(circle at 70% 20%, rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0) 55%),
-            radial-gradient(circle at 25% 80%, rgba(120, 180, 255, 0.12), rgba(120, 180, 255, 0) 68%);
-        opacity: 0.46;
+        background: radial-gradient(circle at 70% 20%, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0) 55%),
+            radial-gradient(circle at 25% 80%, rgba(120, 180, 255, 0.08), rgba(120, 180, 255, 0) 68%);
+        opacity: 0.36;
         transform: translate3d(0, 0, 0);
         transition: opacity 0.45s ease, transform 0.5s cubic-bezier(0.33, 1, 0.68, 1);
         pointer-events: none;
@@ -76,26 +76,26 @@ if (overlay) {
     overlay.addEventListener('pointerenter', () => {
         overlay.style.transform = 'scale3d(1.02, 1.02, 1)';
         overlay.style.boxShadow = `
-            0 34px 78px rgba(32, 72, 144, 0.18),
-            0 12px 30px rgba(32, 72, 144, 0.12),
-            inset 0 1px 0 rgba(255, 255, 255, 0.66),
-            inset 0 -1px 0 rgba(168, 196, 232, 0.24),
-            inset 0 0 170px rgba(255, 255, 255, 0.07)
+            0 26px 66px rgba(32, 72, 144, 0.14),
+            0 10px 26px rgba(32, 72, 144, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.52),
+            inset 0 -1px 0 rgba(168, 196, 232, 0.2),
+            inset 0 0 150px rgba(255, 255, 255, 0.05)
         `;
-        overlayCaustic.style.opacity = '0.6';
+        overlayCaustic.style.opacity = '0.48';
         overlayCaustic.dataset.active = '1';
     });
 
     overlay.addEventListener('pointerleave', () => {
         overlay.style.transform = 'scale3d(1, 1, 1)';
         overlay.style.boxShadow = `
-            0 20px 54px rgba(30, 60, 124, 0.12),
-            0 5px 18px rgba(30, 60, 124, 0.08),
-            inset 0 1px 0 rgba(255, 255, 255, 0.54),
-            inset 0 -1px 0 rgba(168, 196, 232, 0.2),
-            inset 0 0 150px rgba(255, 255, 255, 0.05)
+            0 16px 44px rgba(30, 60, 124, 0.1),
+            0 4px 16px rgba(30, 60, 124, 0.07),
+            inset 0 1px 0 rgba(255, 255, 255, 0.44),
+            inset 0 -1px 0 rgba(168, 196, 232, 0.16),
+            inset 0 0 140px rgba(255, 255, 255, 0.04)
         `;
-        overlayCaustic.style.opacity = '0.46';
+        overlayCaustic.style.opacity = '0.36';
         overlayCaustic.dataset.active = '0';
     });
 
@@ -126,10 +126,10 @@ const updateLayout = () => {
     const isExtraCompact = width <= 480;
 
     if (overlay) {
-        overlay.style.padding = isExtraCompact ? '0.85rem 1.5rem' : isCompact ? '1.05rem 2rem' : '1.35rem 2.6rem';
-        overlay.style.minWidth = isCompact ? '0' : '240px';
-        overlay.style.maxWidth = isExtraCompact ? '320px' : isCompact ? '420px' : '560px';
-        overlay.style.width = isExtraCompact ? 'min(70vw, 300px)' : isCompact ? 'min(60vw, 360px)' : 'min(46vw, 520px)';
+        overlay.style.padding = isExtraCompact ? '0.72rem 1.25rem' : isCompact ? '0.92rem 1.6rem' : '1.1rem 2.1rem';
+        overlay.style.minWidth = isCompact ? '0' : '200px';
+        overlay.style.maxWidth = isExtraCompact ? '280px' : isCompact ? '360px' : '420px';
+        overlay.style.width = isExtraCompact ? 'min(60vw, 260px)' : isCompact ? 'min(46vw, 320px)' : 'min(36vw, 400px)';
     }
 
     if (logotype) {

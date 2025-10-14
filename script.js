@@ -48,9 +48,10 @@ if (overlay) {
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 0.82rem clamp(2.4rem, 10vw, 6.4rem);
-        min-height: 3.2rem;
+        padding: 0.42rem clamp(1.4rem, 6vw, 3rem);
+        min-height: 2.2rem;
         width: 100%;
+        max-width: 17.5rem;
         border-radius: 12px;
         overflow: hidden;
         background:
@@ -166,9 +167,9 @@ const logotype = document.querySelector('.logotype');
 if (logotype) {
     logotype.style.cssText = `
         font-family: "Futura", "Futura PT", "Avenir Next", "Helvetica Neue", "Noto Sans JP", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-        font-size: clamp(2.2rem, 4.8vw, 3.1rem);
+        font-size: clamp(1.4rem, 3.8vw, 2.1rem);
         font-weight: 700;
-        letter-spacing: 0.15em;
+        letter-spacing: 0.1em;
         color: rgba(12, 18, 32, 0.96);
         text-align: center;
         text-shadow:
@@ -188,27 +189,36 @@ const updateLayout = () => {
 
     if (overlay) {
         overlay.style.padding = isExtraCompact
-            ? '0.58rem clamp(1.6rem, 10vw, 3.2rem)'
+            ? '0.32rem clamp(1rem, 8vw, 2.2rem)'
             : isCompact
-                ? '0.72rem clamp(2.2rem, 9vw, 4.6rem)'
-                : '0.82rem clamp(2.8rem, 8vw, 6.4rem)';
+                ? '0.36rem clamp(1.2rem, 7vw, 2.6rem)'
+                : '0.42rem clamp(1.4rem, 6vw, 3rem)';
+        overlay.style.minHeight = isExtraCompact ? '1.9rem' : isCompact ? '2rem' : '2.2rem';
         overlay.style.borderRadius = isExtraCompact ? '8px' : isCompact ? '10px' : '12px';
         overlay.style.top = '50%';
         overlay.style.left = '0';
         overlay.style.right = '0';
-        overlay.style.width = '100%';
-        overlay.style.maxWidth = '100%';
+        overlay.style.width = isExtraCompact
+            ? '82vw'
+            : isCompact
+                ? '70vw'
+                : '58vw';
+        overlay.style.maxWidth = isExtraCompact
+            ? '13.5rem'
+            : isCompact
+                ? '15.5rem'
+                : '17.5rem';
         overlay.style.margin = '0 auto';
         applyOverlayScale(overlay.dataset.hovered === '1' ? 1.02 : 1);
     }
 
     if (logotype) {
         logotype.style.fontSize = isExtraCompact
-            ? 'clamp(1.7rem, 9vw, 2.4rem)'
+            ? 'clamp(1.2rem, 7vw, 1.6rem)'
             : isCompact
-                ? 'clamp(1.9rem, 6vw, 2.6rem)'
-                : 'clamp(2.2rem, 4.2vw, 3.1rem)';
-        logotype.style.letterSpacing = isExtraCompact ? '0.1em' : isCompact ? '0.12em' : '0.15em';
+                ? 'clamp(1.3rem, 5.4vw, 1.8rem)'
+                : 'clamp(1.4rem, 3.8vw, 2.1rem)';
+        logotype.style.letterSpacing = isExtraCompact ? '0.08em' : isCompact ? '0.09em' : '0.1em';
     }
 
     const baseOffsetY = aspectRatio > 1.55 ? -12 : -6;

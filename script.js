@@ -1,13 +1,31 @@
 // Setup body styling via JavaScript
 document.body.style.cssText = `
-    background: radial-gradient(circle at 25% 20%, rgba(255, 255, 255, 0.78), transparent 60%),
-        radial-gradient(circle at 75% 80%, rgba(188, 215, 255, 0.6), transparent 55%),
-        linear-gradient(165deg, #f5f8ff, #dce7ff 52%, #ffe9f3);
+    background-color: #f9fbff;
+    background-image:
+        radial-gradient(circle at 20% 18%, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0) 56%),
+        radial-gradient(circle at 78% 72%, rgba(194, 219, 255, 0.42), rgba(255, 255, 255, 0) 58%),
+        linear-gradient(160deg, rgba(170, 209, 255, 0.18), rgba(255, 199, 221, 0.12) 48%, rgba(255, 255, 255, 0.28));
+    background-size: cover;
     display: grid;
     place-items: center;
     position: relative;
     font-family: "Futura", "Futura PT", "Avenir Next", "Helvetica Neue", "Noto Sans JP", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    color-scheme: light;
 `;
+
+const backgroundTintLayer = document.createElement('div');
+backgroundTintLayer.setAttribute('aria-hidden', 'true');
+backgroundTintLayer.style.cssText = `
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+        linear-gradient(135deg, rgba(112, 156, 255, 0.16), rgba(255, 179, 204, 0.12)),
+        radial-gradient(circle at 12% 85%, rgba(138, 198, 255, 0.18), transparent 56%);
+    mix-blend-mode: screen;
+`;
+document.body.prepend(backgroundTintLayer);
 
 const container = document.querySelector('.webgl');
 if (!container) {
@@ -28,41 +46,86 @@ if (overlay) {
         min-width: 240px;
         width: min(82vw, 560px);
         border-radius: 999px;
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.16), rgba(226, 238, 255, 0.08));
-        backdrop-filter: blur(34px) saturate(180%);
-        border: 0.5px solid rgba(255, 255, 255, 0.28);
+        overflow: hidden;
+        background:
+            radial-gradient(circle at var(--pointer-x, 50%) var(--pointer-y, 50%), rgba(255, 255, 255, 0.32), rgba(255, 255, 255, 0.02) 68%),
+            linear-gradient(155deg, rgba(255, 255, 255, 0.08), rgba(194, 221, 255, 0.06) 48%, rgba(255, 255, 255, 0.03));
+        backdrop-filter: blur(40px) saturate(180%) brightness(1.08);
+        border: 1px solid rgba(255, 255, 255, 0.22);
         box-shadow:
-            0 8px 32px rgba(47, 90, 180, 0.08),
-            0 2px 8px rgba(47, 90, 180, 0.05),
-            inset 0 1px 0 rgba(255, 255, 255, 0.45),
-            inset 0 -1px 0 rgba(255, 255, 255, 0.18),
-            inset 0 0 60px rgba(255, 255, 255, 0.02);
+            0 20px 54px rgba(36, 78, 164, 0.11),
+            0 4px 16px rgba(36, 78, 164, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 0.48),
+            inset 0 -1px 0 rgba(160, 188, 238, 0.25),
+            inset 0 0 120px rgba(255, 255, 255, 0.04);
         z-index: 1;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: transform 0.4s cubic-bezier(0.33, 1, 0.68, 1), box-shadow 0.4s cubic-bezier(0.33, 1, 0.68, 1), background 0.4s ease;
     `;
+
+    const overlaySheen = document.createElement('span');
+    overlaySheen.setAttribute('aria-hidden', 'true');
+    overlaySheen.style.cssText = `
+        position: absolute;
+        inset: -45% -30%;
+        background: linear-gradient(120deg, rgba(255, 255, 255, 0.75) 12%, rgba(255, 255, 255, 0) 55%);
+        opacity: 0.55;
+        transform: rotate(12deg);
+        transition: opacity 0.5s ease, transform 0.6s cubic-bezier(0.33, 1, 0.68, 1);
+        mix-blend-mode: screen;
+        pointer-events: none;
+    `;
+    overlay.appendChild(overlaySheen);
+
+    const overlayCaustic = document.createElement('span');
+    overlayCaustic.setAttribute('aria-hidden', 'true');
+    overlayCaustic.style.cssText = `
+        position: absolute;
+        inset: -20%;
+        background: radial-gradient(circle at 70% 20%, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0) 55%),
+            radial-gradient(circle at 25% 80%, rgba(118, 176, 255, 0.16), rgba(118, 176, 255, 0) 65%);
+        opacity: 0.4;
+        transform: translate3d(0, 0, 0);
+        transition: opacity 0.45s ease, transform 0.5s cubic-bezier(0.33, 1, 0.68, 1);
+        pointer-events: none;
+    `;
+    overlay.appendChild(overlayCaustic);
+
+    overlaySheen.dataset.active = '0';
+    overlayCaustic.dataset.active = '0';
 
     // Add hover/touch effect for liquid glass
     overlay.addEventListener('pointerenter', () => {
-        overlay.style.transform = 'scale(1.02)';
+        overlay.style.transform = 'scale3d(1.02, 1.02, 1)';
         overlay.style.boxShadow = `
-            0 12px 48px rgba(47, 90, 180, 0.12),
-            0 4px 12px rgba(47, 90, 180, 0.07),
-            inset 0 1px 0 rgba(255, 255, 255, 0.55),
-            inset 0 -1px 0 rgba(255, 255, 255, 0.24),
-            inset 0 0 80px rgba(255, 255, 255, 0.04)
+            0 32px 72px rgba(36, 78, 164, 0.16),
+            0 10px 26px rgba(36, 78, 164, 0.12),
+            inset 0 1px 0 rgba(255, 255, 255, 0.62),
+            inset 0 -1px 0 rgba(160, 188, 238, 0.28),
+            inset 0 0 140px rgba(255, 255, 255, 0.06)
         `;
+        overlaySheen.style.opacity = '0.72';
+        overlayCaustic.style.opacity = '0.55';
+        overlaySheen.dataset.active = '1';
+        overlayCaustic.dataset.active = '1';
     });
 
     overlay.addEventListener('pointerleave', () => {
-        overlay.style.transform = 'scale(1)';
+        overlay.style.transform = 'scale3d(1, 1, 1)';
         overlay.style.boxShadow = `
-            0 8px 32px rgba(47, 90, 180, 0.08),
-            0 2px 8px rgba(47, 90, 180, 0.05),
-            inset 0 1px 0 rgba(255, 255, 255, 0.45),
-            inset 0 -1px 0 rgba(255, 255, 255, 0.18),
-            inset 0 0 60px rgba(255, 255, 255, 0.02)
+            0 20px 54px rgba(36, 78, 164, 0.11),
+            0 4px 16px rgba(36, 78, 164, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 0.48),
+            inset 0 -1px 0 rgba(160, 188, 238, 0.25),
+            inset 0 0 120px rgba(255, 255, 255, 0.04)
         `;
+        overlaySheen.style.opacity = '0.55';
+        overlayCaustic.style.opacity = '0.4';
+        overlaySheen.dataset.active = '0';
+        overlayCaustic.dataset.active = '0';
     });
+
+    overlay.__sheenElement = overlaySheen;
+    overlay.__causticElement = overlayCaustic;
 }
 
 const logotype = document.querySelector('.logotype');
@@ -264,7 +327,7 @@ const initBirdSketch = () => {
                 return 1 - p.constrain(distance, 0, 1);
             };
 
-            const applyFeatherColor = (y, s, alpha = 140) => {
+            const applyFeatherColor = (y, s, alpha = 110) => {
                 const longitudinal = p.constrain(1 - y / 45, 0, 1);
                 const span = p.constrain(s, 0, 1);
                 const tipShift = p.lerp(-18, 12, span);
@@ -274,31 +337,31 @@ const initBirdSketch = () => {
                 const hueBase = p.constrain(214 + tipShift * 0.45 + shimmer + ripple + emberPulse * 0.65, 204, 234);
 
                 const saturation = p.constrain(
-                    118
-                        + longitudinal * 78
-                        + p.sin(t * 0.8 + span * p.PI) * 28
-                        + p.cos(y * 0.16 + t * 0.65) * 18,
-                    100,
-                    215,
+                    92
+                        + longitudinal * 60
+                        + p.sin(t * 0.8 + span * p.PI) * 22
+                        + p.cos(y * 0.16 + t * 0.65) * 14,
+                    70,
+                    185,
                 );
 
                 const baseBrightness = p.constrain(
-                    215
-                        + longitudinal * 40
-                        + p.cos(t * 0.9 + span * p.TWO_PI) * 16
-                        + p.sin(y * 0.22 + t * 0.5) * 12,
-                    205,
+                    224
+                        + longitudinal * 36
+                        + p.cos(t * 0.9 + span * p.TWO_PI) * 14
+                        + p.sin(y * 0.22 + t * 0.5) * 10,
+                    210,
                     255,
                 );
 
                 const pointerGlow = evaluatePointerLuminance(y, span);
                 const pointerLift = pointerGlow * touchInfluence;
                 const brightness = p.constrain(
-                    baseBrightness + pointerLift * 48 - (1 - pointerGlow) * 12,
-                    198,
+                    baseBrightness + pointerLift * 36 - (1 - pointerGlow) * 10,
+                    206,
                     255,
                 );
-                const dynamicAlpha = p.constrain(alpha + pointerLift * 55, 60, 255);
+                const dynamicAlpha = p.constrain(alpha + pointerLift * 42, 52, 225);
 
                 p.colorMode(p.HSB, 360, 255, 255, 255);
                 p.stroke(hueBase, saturation, brightness, dynamicAlpha);
@@ -311,7 +374,7 @@ const initBirdSketch = () => {
                 const pulse = (p.cos(t * 0.9 + span * p.PI * 3 + index * 0.12) + 1) * 0.5;
                 const centerBias = 1 - Math.min(Math.abs(span - 0.42) * 2.1, 1);
                 const depthBias = Math.pow(depth, 1.25);
-                return p.constrain(centerBias * 0.45 + depthBias * 0.35 + ridge * 0.25 + pulse * 0.2, 0, 1);
+                return p.constrain((centerBias * 0.45 + depthBias * 0.35 + ridge * 0.25 + pulse * 0.2) * 0.75, 0, 1);
             };
 
             const renderCrimsonAccent = (x1, y1, x2, y2, intensity, pointerGlow = 0) => {
@@ -322,19 +385,19 @@ const initBirdSketch = () => {
                 p.push();
                 p.colorMode(p.HSB, 360, 255, 255, 255);
                 const hue = p.lerp(348, 356, (p.sin(t * 1.35 + x1 * 0.01 + y1 * 0.01) + 1) * 0.5);
-                const saturation = p.constrain(165 + intensity * 60, 0, 255);
+                const saturation = p.constrain(148 + intensity * 42, 0, 255);
                 const pointerLift = pointerGlow * touchInfluence;
-                const brightness = p.constrain(212 + intensity * 32 + pointerLift * 28, 0, 255);
-                const alpha = p.constrain(44 + intensity * 70 + pointerLift * 46, 0, 255);
+                const brightness = p.constrain(218 + intensity * 24 + pointerLift * 22, 0, 255);
+                const alpha = p.constrain(34 + intensity * 52 + pointerLift * 34, 0, 255);
                 p.stroke(hue, saturation, brightness, alpha);
-                p.strokeWeight(0.45 + intensity * 0.65);
+                p.strokeWeight(0.42 + intensity * 0.55);
                 const accentBendX = (touchX - 0.5) * (intensity + pointerLift * 0.6) * 5.5;
                 const accentBendY = (touchY - 0.5) * (intensity + pointerLift * 0.6) * -4.2;
                 p.line(x1 + accentBendX, y1 + accentBendY, x2 - accentBendX * 0.4, y2 - accentBendY * 0.6);
                 p.pop();
             };
 
-            const drawLayeredStroke = (x1, y1, x2, y2, yIndex, sIndex, alpha = 120) => {
+            const drawLayeredStroke = (x1, y1, x2, y2, yIndex, sIndex, alpha = 90) => {
                 const featherFactor = 0.65 + (1 - sIndex) * 0.45 + touchInfluence * 0.25;
 
                 // Base chroma in HSB space
@@ -349,26 +412,26 @@ const initBirdSketch = () => {
                 p.push();
                 p.colorMode(p.RGB, 255, 255, 255, 255);
                 const glowDepth = chroma.depth;
-                const glowAlpha = 38 + featherFactor * 30 + touchInfluence * 32 + glowDepth * 22 + crimsonAccent * 18 + pointerLift * 55;
-                const glowBlue = p.constrain(202 + glowDepth * 48 + featherFactor * 18 + pointerLift * 22, 188, 255);
-                const glowGreen = p.constrain(196 + glowDepth * 32 + p.sin(t * 1.2 + sIndex * p.TWO_PI) * 8 + pointerLift * 18, 178, 255);
-                const glowRed = p.constrain(160 + glowDepth * 24 + p.cos(t * 0.9 + yIndex * 0.12) * 6 + crimsonAccent * 52 + pointerLift * 26, 142, 236);
+                const glowAlpha = 30 + featherFactor * 24 + touchInfluence * 26 + glowDepth * 18 + crimsonAccent * 16 + pointerLift * 42;
+                const glowBlue = p.constrain(208 + glowDepth * 36 + featherFactor * 14 + pointerLift * 18, 190, 255);
+                const glowGreen = p.constrain(202 + glowDepth * 26 + p.sin(t * 1.2 + sIndex * p.TWO_PI) * 6 + pointerLift * 14, 184, 255);
+                const glowRed = p.constrain(168 + glowDepth * 18 + p.cos(t * 0.9 + yIndex * 0.12) * 5 + crimsonAccent * 40 + pointerLift * 20, 150, 232);
                 p.stroke(glowRed, glowGreen, glowBlue, glowAlpha);
-                p.strokeWeight(1.25 + featherFactor * 0.6);
+                p.strokeWeight(1.2 + featherFactor * 0.55);
                 p.line(x1, y1, x2, y2);
 
                 // Inner core accent with stroke(grayscale, alpha)
-                const coreAlpha = 26 + featherFactor * 18 + glowDepth * 16 + pointerLift * 36;
+                const coreAlpha = 22 + featherFactor * 16 + glowDepth * 14 + pointerLift * 28;
                 p.stroke(255, coreAlpha);
-                p.strokeWeight(0.65 + featherFactor * 0.38);
+                p.strokeWeight(0.6 + featherFactor * 0.34);
                 p.line(x1, y1, x2, y2);
 
                 // Ambient shadow to add depth
                 const shadowOffsetX = (touchX - 0.5) * 6;
                 const shadowOffsetY = (touchY - 0.5) * 6;
-                const shadowAlpha = Math.max(0, 24 + featherFactor * 16 + (1 - glowDepth) * 16 - pointerLift * 26);
+                const shadowAlpha = Math.max(0, 18 + featherFactor * 12 + (1 - glowDepth) * 14 - pointerLift * 22);
                 p.stroke(36, 58, 122, shadowAlpha);
-                p.strokeWeight(1.5 + featherFactor * 0.42);
+                p.strokeWeight(1.4 + featherFactor * 0.38);
                 p.line(x1 + shadowOffsetX, y1 + shadowOffsetY, x2 + shadowOffsetX, y2 + shadowOffsetY);
                 p.pop();
 
@@ -635,6 +698,27 @@ const animateOverlay = () => {
         overlay.style.setProperty('--pointer-y', `${overlayPointer.y * 100}%`);
         overlay.style.setProperty('--tilt-x', `${(overlayPointer.x - 0.5) * 14}deg`);
         overlay.style.setProperty('--tilt-y', `${(0.5 - overlayPointer.y) * 11}deg`);
+
+        const sheen = overlay.__sheenElement;
+        const caustic = overlay.__causticElement;
+        const pointerOffsetX = overlayPointer.x - 0.5;
+        const pointerOffsetY = overlayPointer.y - 0.5;
+
+        if (sheen) {
+            const sheenActive = sheen.dataset.active === '1';
+            const sheenTranslateX = pointerOffsetX * (sheenActive ? 18 : 12);
+            const sheenTranslateY = pointerOffsetY * (sheenActive ? 20 : 14) - (sheenActive ? 2 : 0);
+            const sheenRotation = sheenActive ? 18 : 12;
+            sheen.style.transform = `translate3d(${sheenTranslateX}%, ${sheenTranslateY}%, 0) rotate(${sheenRotation}deg)`;
+        }
+
+        if (caustic) {
+            const causticActive = caustic.dataset.active === '1';
+            const causticTranslateX = pointerOffsetX * (causticActive ? 12 : 8);
+            const causticTranslateY = pointerOffsetY * (causticActive ? 10 : 6);
+            const causticScale = causticActive ? 1.04 : 1;
+            caustic.style.transform = `translate3d(${causticTranslateX}%, ${causticTranslateY}%, 0) scale(${causticScale})`;
+        }
     }
 
     requestAnimationFrame(animateOverlay);

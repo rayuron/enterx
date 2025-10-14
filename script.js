@@ -30,76 +30,136 @@ if (!container) {
 container.style.cssText = 'position:fixed;inset:0;z-index:0;pointer-events:none;';
 
 const overlay = document.querySelector('.overlay');
+const overlayBaseTransform = 'translateY(-50%)';
+const applyOverlayScale = (scale = 1) => {
+    if (!overlay) {
+        return;
+    }
+    overlay.style.transform = `${overlayBaseTransform} scale3d(${scale}, ${scale}, 1)`;
+};
+
 if (overlay) {
     overlay.style.cssText = `
-        position: relative;
+        position: fixed;
+        top: 50%;
+        left: 0;
+        right: 0;
+        transform-origin: center;
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 1.1rem 2rem;
-        min-width: 220px;
-        width: min(66vw, 460px);
-        border-radius: 999px;
+        padding: 0.82rem clamp(2.4rem, 10vw, 6.4rem);
+        min-height: 3.2rem;
+        width: 100%;
+        border-radius: 12px;
         overflow: hidden;
         background:
-            radial-gradient(circle at var(--pointer-x, 50%) var(--pointer-y, 50%), rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0) 72%),
-            linear-gradient(155deg, rgba(255, 255, 255, 0.02), rgba(211, 225, 255, 0.015) 48%, rgba(255, 255, 255, 0.008));
-        backdrop-filter: blur(42px) saturate(170%) brightness(1.08);
-        border: 1px solid rgba(255, 255, 255, 0.18);
+            radial-gradient(circle at var(--pointer-x, 50%) var(--pointer-y, 50%), rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0) 70%),
+            linear-gradient(165deg, rgba(255, 255, 255, 0.28), rgba(228, 238, 255, 0.1) 48%, rgba(199, 215, 255, 0.06) 72%, rgba(160, 190, 255, 0.02)),
+            rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(42px) saturate(165%) brightness(1.08);
+        border: 1.2px solid rgba(255, 255, 255, 0.38);
         box-shadow:
-            0 14px 38px rgba(30, 60, 124, 0.08),
-            0 4px 18px rgba(30, 60, 124, 0.06),
-            inset 0 1px 0 rgba(255, 255, 255, 0.42),
-            inset 0 -1px 0 rgba(168, 196, 232, 0.16),
-            inset 0 0 140px rgba(255, 255, 255, 0.03);
+            0 20px 54px rgba(32, 66, 132, 0.16),
+            0 6px 20px rgba(26, 52, 108, 0.08),
+            inset 0 2px 0 rgba(255, 255, 255, 0.52),
+            inset 0 -1px 0 rgba(156, 184, 228, 0.2),
+            inset 0 0 160px rgba(255, 255, 255, 0.06);
         z-index: 1;
-        transition: transform 0.4s cubic-bezier(0.33, 1, 0.68, 1), box-shadow 0.4s cubic-bezier(0.33, 1, 0.68, 1), background 0.4s ease;
+        transition:
+            transform 0.45s cubic-bezier(0.33, 1, 0.68, 1),
+            box-shadow 0.45s cubic-bezier(0.33, 1, 0.68, 1),
+            background 0.4s ease;
     `;
 
+    overlay.style.setProperty('--pointer-x', '50%');
+    overlay.style.setProperty('--pointer-y', '50%');
+    overlay.dataset.hovered = '0';
+    applyOverlayScale(1);
+
+    const overlayReflection = document.createElement('span');
+    overlayReflection.setAttribute('aria-hidden', 'true');
+    overlayReflection.style.cssText = `
+        position: absolute;
+        inset: -25% -30% auto -25%;
+        height: 120%;
+        background:
+            linear-gradient(110deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.2) 35%, rgba(255, 255, 255, 0));
+        opacity: 0.58;
+        mix-blend-mode: screen;
+        transform: translate3d(-14%, -46%, 0) rotate(7deg);
+        filter: blur(18px);
+        pointer-events: none;
+        transition:
+            opacity 0.5s ease,
+            transform 0.55s cubic-bezier(0.33, 1, 0.68, 1);
+    `;
     const overlayCaustic = document.createElement('span');
     overlayCaustic.setAttribute('aria-hidden', 'true');
     overlayCaustic.style.cssText = `
         position: absolute;
         inset: -20%;
-        background: radial-gradient(circle at 70% 20%, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0) 55%),
-            radial-gradient(circle at 25% 80%, rgba(120, 180, 255, 0.08), rgba(120, 180, 255, 0) 68%);
-        opacity: 0.36;
+        background: radial-gradient(circle at 72% 18%, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0) 55%),
+            radial-gradient(circle at 20% 86%, rgba(124, 184, 255, 0.14), rgba(124, 184, 255, 0) 68%);
+        opacity: 0.32;
         transform: translate3d(0, 0, 0);
         transition: opacity 0.45s ease, transform 0.5s cubic-bezier(0.33, 1, 0.68, 1);
         pointer-events: none;
     `;
     overlay.appendChild(overlayCaustic);
+    overlay.appendChild(overlayReflection);
 
     overlayCaustic.dataset.active = '0';
 
-    // Add hover/touch effect for liquid glass
     overlay.addEventListener('pointerenter', () => {
-        overlay.style.transform = 'scale3d(1.02, 1.02, 1)';
+        overlay.dataset.hovered = '1';
+        applyOverlayScale(1.02);
         overlay.style.boxShadow = `
-            0 26px 66px rgba(32, 72, 144, 0.14),
-            0 10px 26px rgba(32, 72, 144, 0.1),
-            inset 0 1px 0 rgba(255, 255, 255, 0.52),
-            inset 0 -1px 0 rgba(168, 196, 232, 0.2),
-            inset 0 0 150px rgba(255, 255, 255, 0.05)
+            0 28px 78px rgba(36, 76, 146, 0.2),
+            0 12px 32px rgba(32, 68, 132, 0.12),
+            inset 0 2px 0 rgba(255, 255, 255, 0.6),
+            inset 0 -1px 0 rgba(156, 184, 228, 0.24),
+            inset 0 0 170px rgba(255, 255, 255, 0.07)
         `;
-        overlayCaustic.style.opacity = '0.48';
+        overlayReflection.style.opacity = '0.76';
+        overlayReflection.style.transform = 'translate3d(-10%, -42%, 0) rotate(5deg)';
+        overlayCaustic.style.opacity = '0.45';
         overlayCaustic.dataset.active = '1';
     });
 
     overlay.addEventListener('pointerleave', () => {
-        overlay.style.transform = 'scale3d(1, 1, 1)';
+        overlay.dataset.hovered = '0';
+        applyOverlayScale(1);
         overlay.style.boxShadow = `
-            0 16px 44px rgba(30, 60, 124, 0.1),
-            0 4px 16px rgba(30, 60, 124, 0.07),
-            inset 0 1px 0 rgba(255, 255, 255, 0.44),
-            inset 0 -1px 0 rgba(168, 196, 232, 0.16),
-            inset 0 0 140px rgba(255, 255, 255, 0.04)
+            0 20px 54px rgba(32, 66, 132, 0.16),
+            0 6px 20px rgba(26, 52, 108, 0.08),
+            inset 0 2px 0 rgba(255, 255, 255, 0.52),
+            inset 0 -1px 0 rgba(156, 184, 228, 0.2),
+            inset 0 0 160px rgba(255, 255, 255, 0.06)
         `;
-        overlayCaustic.style.opacity = '0.36';
+        overlayReflection.style.opacity = '0.58';
+        overlayReflection.style.transform = 'translate3d(-14%, -46%, 0) rotate(7deg)';
+        overlayCaustic.style.opacity = '0.32';
         overlayCaustic.dataset.active = '0';
+        overlay.style.setProperty('--pointer-x', '50%');
+        overlay.style.setProperty('--pointer-y', '50%');
+    });
+
+    overlay.addEventListener('pointermove', (event) => {
+        const rect = overlay.getBoundingClientRect();
+        const relX = ((event.clientX - rect.left) / rect.width) * 100;
+        const relY = ((event.clientY - rect.top) / rect.height) * 100;
+        overlay.style.setProperty('--pointer-x', `${relX.toFixed(2)}%`);
+        overlay.style.setProperty('--pointer-y', `${relY.toFixed(2)}%`);
+
+        const reflectionShiftX = (relX - 50) * 0.08 - 12;
+        const reflectionShiftY = (relY - 50) * -0.12 - 44;
+        const reflectionTilt = 6 + (relX - 50) * 0.025;
+        overlayReflection.style.transform = `translate3d(${reflectionShiftX.toFixed(2)}%, ${reflectionShiftY.toFixed(2)}%, 0) rotate(${reflectionTilt.toFixed(2)}deg)`;
     });
 
     overlay.__causticElement = overlayCaustic;
+    overlay.__reflectionElement = overlayReflection;
 }
 
 const logotype = document.querySelector('.logotype');
@@ -108,11 +168,12 @@ if (logotype) {
         font-family: "Futura", "Futura PT", "Avenir Next", "Helvetica Neue", "Noto Sans JP", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
         font-size: clamp(2.2rem, 4.8vw, 3.1rem);
         font-weight: 700;
-        letter-spacing: 0.28em;
-        color: rgba(14, 18, 28, 0.98);
+        letter-spacing: 0.15em;
+        color: rgba(12, 18, 32, 0.96);
         text-align: center;
-        padding-left: 0.28em;
-        text-shadow: 0 3px 18px rgba(255, 255, 255, 0.32);
+        text-shadow:
+            0 4px 22px rgba(255, 255, 255, 0.38),
+            0 2px 8px rgba(176, 196, 232, 0.18);
     `;
 }
 
@@ -126,24 +187,32 @@ const updateLayout = () => {
     const isExtraCompact = width <= 480;
 
     if (overlay) {
-        overlay.style.padding = isExtraCompact ? '0.72rem 1.25rem' : isCompact ? '0.92rem 1.6rem' : '1.1rem 2.1rem';
-        overlay.style.minWidth = isCompact ? '0' : '200px';
-        overlay.style.maxWidth = isExtraCompact ? '280px' : isCompact ? '360px' : '420px';
-        overlay.style.width = isExtraCompact ? 'min(60vw, 260px)' : isCompact ? 'min(46vw, 320px)' : 'min(36vw, 400px)';
+        overlay.style.padding = isExtraCompact
+            ? '0.58rem clamp(1.6rem, 10vw, 3.2rem)'
+            : isCompact
+                ? '0.72rem clamp(2.2rem, 9vw, 4.6rem)'
+                : '0.82rem clamp(2.8rem, 8vw, 6.4rem)';
+        overlay.style.borderRadius = isExtraCompact ? '8px' : isCompact ? '10px' : '12px';
+        overlay.style.top = '50%';
+        overlay.style.left = '0';
+        overlay.style.right = '0';
+        overlay.style.width = '100%';
+        overlay.style.maxWidth = '100%';
+        overlay.style.margin = '0 auto';
+        applyOverlayScale(overlay.dataset.hovered === '1' ? 1.02 : 1);
     }
 
     if (logotype) {
         logotype.style.fontSize = isExtraCompact
-            ? 'clamp(1.6rem, 8vw, 2.3rem)'
+            ? 'clamp(1.7rem, 9vw, 2.4rem)'
             : isCompact
-                ? 'clamp(1.85rem, 6vw, 2.6rem)'
+                ? 'clamp(1.9rem, 6vw, 2.6rem)'
                 : 'clamp(2.2rem, 4.2vw, 3.1rem)';
-        logotype.style.letterSpacing = isExtraCompact ? '0.18em' : isCompact ? '0.22em' : '0.28em';
-        logotype.style.paddingLeft = isExtraCompact ? '0.18em' : isCompact ? '0.22em' : '0.28em';
+        logotype.style.letterSpacing = isExtraCompact ? '0.1em' : isCompact ? '0.12em' : '0.15em';
     }
 
     const baseOffsetY = aspectRatio > 1.55 ? -12 : -6;
-    const compactOffsetY = isCompact ? (isExtraCompact ? -26 : -18) : baseOffsetY;
+    const compactOffsetY = isCompact ? (isExtraCompact ? -20 : -14) : baseOffsetY;
     compositionOffset.x = 0;
     compositionOffset.y = compactOffsetY;
 };
@@ -573,7 +642,7 @@ const initBirdSketch = () => {
 
             p.pop();
 
-            t += p.PI / 300;
+            t += p.PI / 260;
         };
     };
 

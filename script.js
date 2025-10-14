@@ -1,10 +1,7 @@
 // Setup body styling via JavaScript
 document.body.style.cssText = `
-    background-color: #f9fbff;
-    background-image:
-        radial-gradient(circle at 20% 18%, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0) 56%),
-        radial-gradient(circle at 78% 72%, rgba(194, 219, 255, 0.42), rgba(255, 255, 255, 0) 58%),
-        linear-gradient(160deg, rgba(170, 209, 255, 0.18), rgba(255, 199, 221, 0.12) 48%, rgba(255, 255, 255, 0.28));
+    background-color: #ffffff;
+    background-image: none;
     background-size: cover;
     display: grid;
     place-items: center;
@@ -20,10 +17,7 @@ backgroundTintLayer.style.cssText = `
     inset: 0;
     z-index: -1;
     pointer-events: none;
-    background:
-        linear-gradient(135deg, rgba(112, 156, 255, 0.16), rgba(255, 179, 204, 0.12)),
-        radial-gradient(circle at 12% 85%, rgba(138, 198, 255, 0.18), transparent 56%);
-    mix-blend-mode: screen;
+    background: none;
 `;
 document.body.prepend(backgroundTintLayer);
 
@@ -48,16 +42,16 @@ if (overlay) {
         border-radius: 999px;
         overflow: hidden;
         background:
-            radial-gradient(circle at var(--pointer-x, 50%) var(--pointer-y, 50%), rgba(255, 255, 255, 0.32), rgba(255, 255, 255, 0.02) 68%),
-            linear-gradient(155deg, rgba(255, 255, 255, 0.08), rgba(194, 221, 255, 0.06) 48%, rgba(255, 255, 255, 0.03));
-        backdrop-filter: blur(40px) saturate(180%) brightness(1.08);
-        border: 1px solid rgba(255, 255, 255, 0.22);
+            radial-gradient(circle at var(--pointer-x, 50%) var(--pointer-y, 50%), rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0) 72%),
+            linear-gradient(155deg, rgba(255, 255, 255, 0.04), rgba(211, 225, 255, 0.03) 48%, rgba(255, 255, 255, 0.015));
+        backdrop-filter: blur(46px) saturate(195%) brightness(1.12);
+        border: 1px solid rgba(255, 255, 255, 0.3);
         box-shadow:
-            0 20px 54px rgba(36, 78, 164, 0.11),
-            0 4px 16px rgba(36, 78, 164, 0.08),
-            inset 0 1px 0 rgba(255, 255, 255, 0.48),
-            inset 0 -1px 0 rgba(160, 188, 238, 0.25),
-            inset 0 0 120px rgba(255, 255, 255, 0.04);
+            0 18px 52px rgba(30, 60, 124, 0.1),
+            0 6px 22px rgba(30, 60, 124, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 0.55),
+            inset 0 -1px 0 rgba(168, 196, 232, 0.2),
+            inset 0 0 160px rgba(255, 255, 255, 0.05);
         z-index: 1;
         transition: transform 0.4s cubic-bezier(0.33, 1, 0.68, 1), box-shadow 0.4s cubic-bezier(0.33, 1, 0.68, 1), background 0.4s ease;
     `;
@@ -67,8 +61,8 @@ if (overlay) {
     overlaySheen.style.cssText = `
         position: absolute;
         inset: -45% -30%;
-        background: linear-gradient(120deg, rgba(255, 255, 255, 0.75) 12%, rgba(255, 255, 255, 0) 55%);
-        opacity: 0.55;
+        background: linear-gradient(120deg, rgba(255, 255, 255, 0.82) 16%, rgba(255, 255, 255, 0) 58%);
+        opacity: 0.62;
         transform: rotate(12deg);
         transition: opacity 0.5s ease, transform 0.6s cubic-bezier(0.33, 1, 0.68, 1);
         mix-blend-mode: screen;
@@ -81,9 +75,9 @@ if (overlay) {
     overlayCaustic.style.cssText = `
         position: absolute;
         inset: -20%;
-        background: radial-gradient(circle at 70% 20%, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0) 55%),
-            radial-gradient(circle at 25% 80%, rgba(118, 176, 255, 0.16), rgba(118, 176, 255, 0) 65%);
-        opacity: 0.4;
+        background: radial-gradient(circle at 70% 20%, rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0) 55%),
+            radial-gradient(circle at 25% 80%, rgba(120, 180, 255, 0.12), rgba(120, 180, 255, 0) 68%);
+        opacity: 0.46;
         transform: translate3d(0, 0, 0);
         transition: opacity 0.45s ease, transform 0.5s cubic-bezier(0.33, 1, 0.68, 1);
         pointer-events: none;
@@ -97,14 +91,14 @@ if (overlay) {
     overlay.addEventListener('pointerenter', () => {
         overlay.style.transform = 'scale3d(1.02, 1.02, 1)';
         overlay.style.boxShadow = `
-            0 32px 72px rgba(36, 78, 164, 0.16),
-            0 10px 26px rgba(36, 78, 164, 0.12),
-            inset 0 1px 0 rgba(255, 255, 255, 0.62),
-            inset 0 -1px 0 rgba(160, 188, 238, 0.28),
-            inset 0 0 140px rgba(255, 255, 255, 0.06)
+            0 34px 78px rgba(32, 72, 144, 0.18),
+            0 12px 30px rgba(32, 72, 144, 0.12),
+            inset 0 1px 0 rgba(255, 255, 255, 0.66),
+            inset 0 -1px 0 rgba(168, 196, 232, 0.24),
+            inset 0 0 170px rgba(255, 255, 255, 0.07)
         `;
         overlaySheen.style.opacity = '0.72';
-        overlayCaustic.style.opacity = '0.55';
+        overlayCaustic.style.opacity = '0.6';
         overlaySheen.dataset.active = '1';
         overlayCaustic.dataset.active = '1';
     });
@@ -112,14 +106,14 @@ if (overlay) {
     overlay.addEventListener('pointerleave', () => {
         overlay.style.transform = 'scale3d(1, 1, 1)';
         overlay.style.boxShadow = `
-            0 20px 54px rgba(36, 78, 164, 0.11),
-            0 4px 16px rgba(36, 78, 164, 0.08),
-            inset 0 1px 0 rgba(255, 255, 255, 0.48),
-            inset 0 -1px 0 rgba(160, 188, 238, 0.25),
-            inset 0 0 120px rgba(255, 255, 255, 0.04)
+            0 20px 54px rgba(30, 60, 124, 0.12),
+            0 5px 18px rgba(30, 60, 124, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 0.54),
+            inset 0 -1px 0 rgba(168, 196, 232, 0.2),
+            inset 0 0 150px rgba(255, 255, 255, 0.05)
         `;
         overlaySheen.style.opacity = '0.55';
-        overlayCaustic.style.opacity = '0.4';
+        overlayCaustic.style.opacity = '0.46';
         overlaySheen.dataset.active = '0';
         overlayCaustic.dataset.active = '0';
     });

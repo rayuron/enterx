@@ -33,162 +33,39 @@ const PHI = (1 + Math.sqrt(5)) / 2;
 
 const toRem = (value) => `${value.toFixed(2)}rem`;
 
-const goldenClamp = (base, vw) => `clamp(${toRem(base * PHI ** 2)}, ${vw.toFixed(2)}vw, ${toRem(base * PHI ** 3)})`;
-
 const overlay = document.querySelector('.overlay');
-const overlayBaseTransform = 'translateY(-50%)';
-const applyOverlayScale = (scale = 1) => {
-    if (!overlay) {
-        return;
-    }
-    overlay.style.transform = `${overlayBaseTransform} scale3d(${scale}, ${scale}, 1)`;
-};
-
-const overlayRadii = {
-    desktop: '60px 188px 72px 164px / 108px 86px 130px 90px',
-    compact: '52px 164px 66px 148px / 100px 80px 118px 84px',
-    extraCompact: '44px 132px 56px 124px / 92px 72px 108px 76px',
-};
 
 if (overlay) {
     overlay.style.cssText = `
         position: fixed;
         top: 50%;
-        left: 0;
-        right: 0;
-        transform-origin: center;
+        left: 50%;
+        transform: translate(-50%, -50%);
         display: flex;
-        flex-direction: column;
         align-items: center;
         justify-content: center;
         text-align: center;
-        padding: ${toRem(1.32)} ${goldenClamp(1.58, 6.8)};
-        width: 46vw;
-        max-width: ${toRem(9.1 * PHI)};
-        border-radius: 60px 188px 72px 164px / 108px 86px 130px 90px;
-        overflow: hidden;
-        color: rgba(255, 255, 255, 0.9);
-        background:
-            radial-gradient(circle at var(--pointer-x, 50%) var(--pointer-y, 50%), rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0) 70%),
-            linear-gradient(165deg, rgba(255, 255, 255, 0.3), rgba(228, 238, 255, 0.12) 48%, rgba(199, 215, 255, 0.07) 72%, rgba(160, 190, 255, 0.03)),
-            rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(46px) saturate(170%) brightness(1.08);
-        border: 1.2px solid rgba(255, 255, 255, 0.38);
-        box-shadow:
-            0 20px 54px rgba(32, 66, 132, 0.16),
-            0 6px 20px rgba(26, 52, 108, 0.08),
-            inset 0 2px 0 rgba(255, 255, 255, 0.52),
-            inset 0 -1px 0 rgba(156, 184, 228, 0.2),
-            inset 0 0 160px rgba(255, 255, 255, 0.06);
+        padding: 0;
+        width: auto;
+        max-width: 90vw;
+        color: #0f172a;
+        background: none;
+        border: none;
+        box-shadow: none;
         z-index: 1;
-        transition:
-            transform 0.45s cubic-bezier(0.33, 1, 0.68, 1),
-            box-shadow 0.45s cubic-bezier(0.33, 1, 0.68, 1),
-            background 0.4s ease;
     `;
-
-    overlay.style.setProperty('--pointer-x', '50%');
-    overlay.style.setProperty('--pointer-y', '50%');
-    overlay.dataset.hovered = '0';
-    applyOverlayScale(1);
-
-    const overlayReflection = document.createElement('span');
-    overlayReflection.setAttribute('aria-hidden', 'true');
-    overlayReflection.style.cssText = `
-        position: absolute;
-        inset: -25% -30% auto -25%;
-        height: 120%;
-        background:
-            linear-gradient(110deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.2) 35%, rgba(255, 255, 255, 0));
-        opacity: 0.58;
-        mix-blend-mode: screen;
-        transform: translate3d(-14%, -46%, 0) rotate(7deg);
-        filter: blur(18px);
-        pointer-events: none;
-        transition:
-            opacity 0.5s ease,
-            transform 0.55s cubic-bezier(0.33, 1, 0.68, 1);
-    `;
-    const overlayCaustic = document.createElement('span');
-    overlayCaustic.setAttribute('aria-hidden', 'true');
-    overlayCaustic.style.cssText = `
-        position: absolute;
-        inset: -20%;
-        background: radial-gradient(circle at 72% 18%, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0) 55%),
-            radial-gradient(circle at 20% 86%, rgba(124, 184, 255, 0.14), rgba(124, 184, 255, 0) 68%);
-        opacity: 0.32;
-        transform: translate3d(0, 0, 0);
-        transition: opacity 0.45s ease, transform 0.5s cubic-bezier(0.33, 1, 0.68, 1);
-        pointer-events: none;
-    `;
-    overlay.appendChild(overlayCaustic);
-    overlay.appendChild(overlayReflection);
-
-    overlayCaustic.dataset.active = '0';
-
-    overlay.addEventListener('pointerenter', () => {
-        overlay.dataset.hovered = '1';
-        applyOverlayScale(1.02);
-        overlay.style.boxShadow = `
-            0 28px 78px rgba(36, 76, 146, 0.2),
-            0 12px 32px rgba(32, 68, 132, 0.12),
-            inset 0 2px 0 rgba(255, 255, 255, 0.6),
-            inset 0 -1px 0 rgba(156, 184, 228, 0.24),
-            inset 0 0 170px rgba(255, 255, 255, 0.07)
-        `;
-        overlayReflection.style.opacity = '0.76';
-        overlayReflection.style.transform = 'translate3d(-10%, -42%, 0) rotate(5deg)';
-        overlayCaustic.style.opacity = '0.45';
-        overlayCaustic.dataset.active = '1';
-    });
-
-    overlay.addEventListener('pointerleave', () => {
-        overlay.dataset.hovered = '0';
-        applyOverlayScale(1);
-        overlay.style.boxShadow = `
-            0 20px 54px rgba(32, 66, 132, 0.16),
-            0 6px 20px rgba(26, 52, 108, 0.08),
-            inset 0 2px 0 rgba(255, 255, 255, 0.52),
-            inset 0 -1px 0 rgba(156, 184, 228, 0.2),
-            inset 0 0 160px rgba(255, 255, 255, 0.06)
-        `;
-        overlayReflection.style.opacity = '0.58';
-        overlayReflection.style.transform = 'translate3d(-14%, -46%, 0) rotate(7deg)';
-        overlayCaustic.style.opacity = '0.32';
-        overlayCaustic.dataset.active = '0';
-        overlay.style.setProperty('--pointer-x', '50%');
-        overlay.style.setProperty('--pointer-y', '50%');
-    });
-
-    overlay.addEventListener('pointermove', (event) => {
-        const rect = overlay.getBoundingClientRect();
-        const relX = ((event.clientX - rect.left) / rect.width) * 100;
-        const relY = ((event.clientY - rect.top) / rect.height) * 100;
-        overlay.style.setProperty('--pointer-x', `${relX.toFixed(2)}%`);
-        overlay.style.setProperty('--pointer-y', `${relY.toFixed(2)}%`);
-
-        const reflectionShiftX = (relX - 50) * 0.08 - 12;
-        const reflectionShiftY = (relY - 50) * -0.12 - 44;
-        const reflectionTilt = 6 + (relX - 50) * 0.025;
-        overlayReflection.style.transform = `translate3d(${reflectionShiftX.toFixed(2)}%, ${reflectionShiftY.toFixed(2)}%, 0) rotate(${reflectionTilt.toFixed(2)}deg)`;
-    });
-
-    overlay.__causticElement = overlayCaustic;
-    overlay.__reflectionElement = overlayReflection;
 }
 
 const logotype = document.querySelector('.logotype');
 if (logotype) {
     logotype.style.cssText = `
         font-family: "Futura", "Futura PT", "Avenir Next", "Helvetica Neue", "Noto Sans JP", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-        font-size: clamp(1.4rem, 3.8vw, 2.1rem);
-        font-weight: 700;
-        letter-spacing: 0.1em;
-        color: rgba(255, 255, 255, 0.92);
+        font-size: clamp(1.6rem, 4.2vw, 2.6rem);
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        color: #0f172a;
         text-align: center;
-        text-shadow:
-            0 6px 28px rgba(24, 52, 98, 0.24),
-            0 2px 12px rgba(10, 28, 64, 0.18);
+        text-transform: uppercase;
     `;
 }
 
@@ -201,41 +78,14 @@ const updateLayout = () => {
     const isCompact = width <= 768;
     const isExtraCompact = width <= 480;
 
-    if (overlay) {
-        const verticalBase = isExtraCompact ? 1.02 : isCompact ? 1.18 : 1.32;
-        const horizontalBase = isExtraCompact ? 1.26 : isCompact ? 1.42 : 1.58;
-        const horizontalVw = isExtraCompact ? 16.8 : isCompact ? 9.8 : 6.8;
-        overlay.style.padding = `${toRem(verticalBase)} ${goldenClamp(horizontalBase, horizontalVw)}`;
-        overlay.style.borderRadius = isExtraCompact
-            ? overlayRadii.extraCompact
-            : isCompact
-                ? overlayRadii.compact
-                : overlayRadii.desktop;
-        overlay.style.top = '50%';
-        overlay.style.left = '0';
-        overlay.style.right = '0';
-        overlay.style.width = isExtraCompact
-            ? '78vw'
-            : isCompact
-                ? '60vw'
-                : '46vw';
-        overlay.style.maxWidth = isExtraCompact
-            ? toRem(5.8 * PHI)
-            : isCompact
-                ? toRem(7.6 * PHI)
-                : toRem(9.1 * PHI);
-        overlay.style.margin = '0 auto';
-        applyOverlayScale(overlay.dataset.hovered === '1' ? 1.02 : 1);
-    }
-
     if (logotype) {
-        const logotypeBase = isExtraCompact ? 1.05 : isCompact ? 1.12 : 1.18;
-        const fontMin = toRem(logotypeBase * PHI / 1.12);
-        const fontMax = toRem(logotypeBase * PHI * 1.1);
-        const vwScale = isExtraCompact ? 7.2 : isCompact ? 5.6 : 3.6;
+        const fontBase = isExtraCompact ? 1.35 : isCompact ? 1.5 : 1.65;
+        const fontMin = toRem(fontBase * PHI);
+        const fontMax = toRem(fontBase * PHI * 1.25);
+        const vwScale = isExtraCompact ? 8 : isCompact ? 6 : 4.2;
         logotype.style.fontSize = `clamp(${fontMin}, ${vwScale}vw, ${fontMax})`;
-        const baseTracking = isExtraCompact ? 0.072 : isCompact ? 0.082 : 0.092;
-        logotype.style.letterSpacing = `${(baseTracking * PHI).toFixed(3)}em`;
+        const trackingBase = isExtraCompact ? 0.06 : isCompact ? 0.07 : 0.08;
+        logotype.style.letterSpacing = `${(trackingBase * PHI).toFixed(3)}em`;
     }
 
     const baseOffsetY = aspectRatio > 1.55 ? -12 : -6;
@@ -718,71 +568,3 @@ Promise.all([readyPromise, p5LoadedPromise]).then(() => {
     console.error('Init error:', error);
 });
 
-const pointer = { x: 0.5, y: 0.5 };
-const pointerTarget = { x: 0.5, y: 0.5 };
-const overlayPointer = { x: 0.5, y: 0.5 };
-const overlayTarget = { x: 0.5, y: 0.5 };
-
-const clamp01 = (value) => Math.min(Math.max(value, 0), 1);
-
-const updateTargets = (clientX, clientY) => {
-    const width = window.innerWidth || 1;
-    const height = window.innerHeight || 1;
-    const x = clamp01(clientX / width);
-    const y = clamp01(clientY / height);
-    pointerTarget.x = x;
-    pointerTarget.y = y;
-    overlayTarget.x = x;
-    overlayTarget.y = y;
-};
-
-const handlePointerEnter = (event) => {
-    updateTargets(event.clientX, event.clientY);
-    overlay?.classList.add('is-active');
-};
-
-const handlePointerMove = (event) => {
-    updateTargets(event.clientX, event.clientY);
-};
-
-const resetPointer = () => {
-    overlay?.classList.remove('is-active');
-    updateTargets(window.innerWidth / 2, window.innerHeight / 2);
-};
-
-window.addEventListener('pointerdown', handlePointerEnter);
-window.addEventListener('pointermove', handlePointerMove);
-window.addEventListener('pointerup', resetPointer);
-window.addEventListener('pointerleave', resetPointer);
-window.addEventListener('blur', resetPointer);
-
-const animateOverlay = () => {
-    pointer.x += (pointerTarget.x - pointer.x) * 0.12;
-    pointer.y += (pointerTarget.y - pointer.y) * 0.12;
-
-    overlayPointer.x += (overlayTarget.x - overlayPointer.x) * 0.1;
-    overlayPointer.y += (overlayTarget.y - overlayPointer.y) * 0.1;
-
-    if (overlay) {
-        overlay.style.setProperty('--pointer-x', `${overlayPointer.x * 100}%`);
-        overlay.style.setProperty('--pointer-y', `${overlayPointer.y * 100}%`);
-        overlay.style.setProperty('--tilt-x', `${(overlayPointer.x - 0.5) * 14}deg`);
-        overlay.style.setProperty('--tilt-y', `${(0.5 - overlayPointer.y) * 11}deg`);
-
-        const caustic = overlay.__causticElement;
-        const pointerOffsetX = overlayPointer.x - 0.5;
-        const pointerOffsetY = overlayPointer.y - 0.5;
-
-        if (caustic) {
-            const causticActive = caustic.dataset.active === '1';
-            const causticTranslateX = pointerOffsetX * (causticActive ? 12 : 8);
-            const causticTranslateY = pointerOffsetY * (causticActive ? 10 : 6);
-            const causticScale = causticActive ? 1.04 : 1;
-            caustic.style.transform = `translate3d(${causticTranslateX}%, ${causticTranslateY}%, 0) scale(${causticScale})`;
-        }
-    }
-
-    requestAnimationFrame(animateOverlay);
-};
-
-animateOverlay();

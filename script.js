@@ -60,12 +60,11 @@ const logotype = document.querySelector('.logotype');
 if (logotype) {
     logotype.style.cssText = `
         font-family: "Futura", "Futura PT", "Avenir Next", "Helvetica Neue", "Noto Sans JP", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-        font-size: clamp(1.6rem, 4.2vw, 2.6rem);
+        font-size: clamp(1.8rem, 4.6vw, 3.0rem);
         font-weight: 600;
-        letter-spacing: 0.08em;
+        letter-spacing: 0.07em;
         color: #0f172a;
         text-align: center;
-        text-transform: uppercase;
     `;
 }
 
@@ -79,12 +78,12 @@ const updateLayout = () => {
     const isExtraCompact = width <= 480;
 
     if (logotype) {
-        const fontBase = isExtraCompact ? 1.35 : isCompact ? 1.5 : 1.65;
+        const fontBase = isExtraCompact ? 1.45 : isCompact ? 1.6 : 1.75;
         const fontMin = toRem(fontBase * PHI);
         const fontMax = toRem(fontBase * PHI * 1.25);
-        const vwScale = isExtraCompact ? 8 : isCompact ? 6 : 4.2;
+        const vwScale = isExtraCompact ? 8.6 : isCompact ? 6.5 : 4.8;
         logotype.style.fontSize = `clamp(${fontMin}, ${vwScale}vw, ${fontMax})`;
-        const trackingBase = isExtraCompact ? 0.06 : isCompact ? 0.07 : 0.08;
+        const trackingBase = isExtraCompact ? 0.045 : isCompact ? 0.05 : 0.055;
         logotype.style.letterSpacing = `${(trackingBase * PHI).toFixed(3)}em`;
     }
 

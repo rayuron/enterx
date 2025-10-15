@@ -44,6 +44,12 @@ const applyOverlayScale = (scale = 1) => {
     overlay.style.transform = `${overlayBaseTransform} scale3d(${scale}, ${scale}, 1)`;
 };
 
+const overlayRadii = {
+    desktop: '60px 188px 72px 164px / 108px 86px 130px 90px',
+    compact: '52px 164px 66px 148px / 100px 80px 118px 84px',
+    extraCompact: '44px 132px 56px 124px / 92px 72px 108px 76px',
+};
+
 if (overlay) {
     overlay.style.cssText = `
         position: fixed;
@@ -52,19 +58,21 @@ if (overlay) {
         right: 0;
         transform-origin: center;
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: 0.34rem clamp(${toRem(0.34 * PHI ** 2)}, 4.8vw, ${toRem(0.34 * PHI ** 3)});
-        min-height: ${toRem(0.34 * PHI * 3.4)};
-        width: 52vw;
-        max-width: ${toRem(10 * PHI)};
-        border-radius: ${(5.6 * PHI).toFixed(1)}px;
+        text-align: center;
+        padding: ${toRem(1.32)} ${goldenClamp(1.58, 6.8)};
+        width: 46vw;
+        max-width: ${toRem(9.1 * PHI)};
+        border-radius: 60px 188px 72px 164px / 108px 86px 130px 90px;
         overflow: hidden;
+        color: rgba(255, 255, 255, 0.9);
         background:
-            radial-gradient(circle at var(--pointer-x, 50%) var(--pointer-y, 50%), rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0) 70%),
-            linear-gradient(165deg, rgba(255, 255, 255, 0.28), rgba(228, 238, 255, 0.1) 48%, rgba(199, 215, 255, 0.06) 72%, rgba(160, 190, 255, 0.02)),
-            rgba(255, 255, 255, 0.08);
-        backdrop-filter: blur(42px) saturate(165%) brightness(1.08);
+            radial-gradient(circle at var(--pointer-x, 50%) var(--pointer-y, 50%), rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0) 70%),
+            linear-gradient(165deg, rgba(255, 255, 255, 0.3), rgba(228, 238, 255, 0.12) 48%, rgba(199, 215, 255, 0.07) 72%, rgba(160, 190, 255, 0.03)),
+            rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(46px) saturate(170%) brightness(1.08);
         border: 1.2px solid rgba(255, 255, 255, 0.38);
         box-shadow:
             0 20px 54px rgba(32, 66, 132, 0.16),
@@ -176,11 +184,11 @@ if (logotype) {
         font-size: clamp(1.4rem, 3.8vw, 2.1rem);
         font-weight: 700;
         letter-spacing: 0.1em;
-        color: rgba(120, 120, 120, 0.4);
+        color: rgba(255, 255, 255, 0.92);
         text-align: center;
         text-shadow:
-            0 4px 22px rgba(255, 255, 255, 0.38),
-            0 2px 8px rgba(176, 196, 232, 0.18);
+            0 6px 28px rgba(24, 52, 98, 0.24),
+            0 2px 12px rgba(10, 28, 64, 0.18);
     `;
 }
 
@@ -194,25 +202,28 @@ const updateLayout = () => {
     const isExtraCompact = width <= 480;
 
     if (overlay) {
-        const paddingBase = isExtraCompact ? 0.28 : isCompact ? 0.31 : 0.34;
-        const paddingVw = isExtraCompact ? 9.4 : isCompact ? 6.6 : 4.8;
-        overlay.style.padding = `${toRem(paddingBase)} ${goldenClamp(paddingBase, paddingVw)}`;
-        overlay.style.minHeight = toRem(paddingBase * PHI * 3.4);
-        const radiusBase = isExtraCompact ? 4.2 : isCompact ? 4.8 : 5.6;
-        overlay.style.borderRadius = `${(radiusBase * PHI).toFixed(1)}px`;
+        const verticalBase = isExtraCompact ? 1.02 : isCompact ? 1.18 : 1.32;
+        const horizontalBase = isExtraCompact ? 1.26 : isCompact ? 1.42 : 1.58;
+        const horizontalVw = isExtraCompact ? 16.8 : isCompact ? 9.8 : 6.8;
+        overlay.style.padding = `${toRem(verticalBase)} ${goldenClamp(horizontalBase, horizontalVw)}`;
+        overlay.style.borderRadius = isExtraCompact
+            ? overlayRadii.extraCompact
+            : isCompact
+                ? overlayRadii.compact
+                : overlayRadii.desktop;
         overlay.style.top = '50%';
         overlay.style.left = '0';
         overlay.style.right = '0';
         overlay.style.width = isExtraCompact
-            ? '76vw'
+            ? '78vw'
             : isCompact
-                ? '62vw'
-                : '52vw';
+                ? '60vw'
+                : '46vw';
         overlay.style.maxWidth = isExtraCompact
-            ? toRem(6.2 * PHI)
+            ? toRem(5.8 * PHI)
             : isCompact
-                ? toRem(8.1 * PHI)
-                : toRem(10 * PHI);
+                ? toRem(7.6 * PHI)
+                : toRem(9.1 * PHI);
         overlay.style.margin = '0 auto';
         applyOverlayScale(overlay.dataset.hovered === '1' ? 1.02 : 1);
     }

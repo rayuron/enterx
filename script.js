@@ -176,7 +176,7 @@ if (logotype) {
         font-size: clamp(1.4rem, 3.8vw, 2.1rem);
         font-weight: 700;
         letter-spacing: 0.1em;
-        color: rgba(12, 18, 32, 0.96);
+        color: rgba(120, 120, 120, 0.4);
         text-align: center;
         text-shadow:
             0 4px 22px rgba(255, 255, 255, 0.38),
